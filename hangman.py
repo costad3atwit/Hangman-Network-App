@@ -1,4 +1,5 @@
 from flask import Flask
+from flask import render_template 
 
 # Create a Flask app instance
 app = Flask(__name__)
@@ -6,8 +7,10 @@ app = Flask(__name__)
 # Define a route for the root URL ('/')
 @app.route('/')
 def hello_world():
-    return '<h1>Hello, World!<h1>'
+    message = "My name is Dominic"
+    return render_template('index.html',  
+                           message=message) 
 
 # Run the app when this file is executed
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(threaded=True, debug=True)
