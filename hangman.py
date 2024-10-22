@@ -7,7 +7,8 @@ app = Flask(__name__)
 # Define a route for the root URL ('/')
 @app.route('/')
 def hello_world():
-    message = "My name is Dominic"
+    message = "Hangman App! :P"
+    
     return render_template('index.html',  
                            message=message) 
 
