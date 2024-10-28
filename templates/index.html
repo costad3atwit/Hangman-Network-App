@@ -11,26 +11,40 @@
 <body>
   <h1>{{message}}</h1>
   <button type="button" onclick="toggleDarkMode()">Dark Mode</button>
-  <button type="button" onclick="roleHost()">Play as Host</button>
-  <button type="button" onclick="rolePlayer()">Play as Player</button>
+  <div id="role selectors">
+    <button type="button" onclick="roleHost()">Play as Host</button>
+    <button type="button" onclick="rolePlayer()">Play as Player</button>
+  </div>
+
+  <div id="host page">
+    <h2>Enter the Secret Word </h2>
+    <form>
+      <label for="secret word">Secret Word:</label>
+      <input type="text" id="fname" name="fname"><br><br>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
 
   <script type="text/javascript" charset="utf-8">
-    var socket = io();
-
-
-    socket.on('connect', function () {
-      socket.emit('my event', { data: 'I\'m connected!' });
-    });
+    var socket = io()
 
     function roleHost() {
       socket.emit('role selection', { role: 'host' });
-      console.log('Role set to Host');
     }
+
+    socket.on('showHostPage', function () {
+      console.log("Host page event received");
+      document.querySelector('role selectors').style.display = 'none';
+      document.getElementById('host page').style.display = 'block';
+    });
 
     function rolePlayer() {
       socket.emit('role selection', { role: 'player' });
-      console.log('Role set to Player');
     }
+
+    socket.on('show player page', function(){
+      //hide and show necessary elements for player view
+    });
 
   </script>
 

@@ -1,5 +1,6 @@
 from flask import Flask
-from flask import render_template 
+from flask import render_template
+from flask import request 
 #pip install flask-socketio
 #to install line 5 copy the above command into the terminal
 from flask_socketio import SocketIO
@@ -25,7 +26,15 @@ def hello_world():
 def handle_role_selection(data):
     role = data['role']
     print(f'User selected role: {role}')
+
     # Handle role logic here
+    if role == 'host':
+        #below not executing even though role should be established correctly
+        print(f'Role is host, emitting showHostPage to ' + request.sid)
+        socketio.emit('showHostPage', room=request.sid)
+    elif role == 'player':
+        socketio.emit('show player page', room=request.sid)
+
 
 # Run the app when this file is executed
 if __name__ == '__main__':
