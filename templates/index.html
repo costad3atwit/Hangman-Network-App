@@ -9,46 +9,65 @@
 </head>
 
 <body>
-  <h1>{{message}}</h1>
-  <button type="button" onclick="toggleDarkMode()">Dark Mode</button>
-  <div id="role selectors">
+  <h1>HANGMAN</h1>
+    <div> 
+    <button type="button" id = "dark-mode-btn"onclick="toggleDarkMode()">Dark Mode Toggle</button>
+  </div>
+    <div id="role-selectors">
     <button type="button" onclick="roleHost()">Play as Host</button>
     <button type="button" onclick="rolePlayer()">Play as Player</button>
   </div>
 
-  <div id="host page">
+  <div id="host-page" style="display: none;" >
     <h2>Enter the Secret Word </h2>
+    <form id = "host-form" onsubmit="secretWordSubmission(event)">
+      <label for="secret-word">Secret Word:</label>
+      <input type="text" id="secretWord" name="secretWord" required><br><br>
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+  <div id="player-page" style="display: none;" >
+    <h2>Enter Guesses </h2>
     <form>
-      <label for="secret word">Secret Word:</label>
+      <label for="secret-word">Guess:</label>
       <input type="text" id="fname" name="fname"><br><br>
       <input type="submit" value="Submit">
     </form>
   </div>
+  <h2 id="submissionMsg"></h2>
 
   <script type="text/javascript" charset="utf-8">
     var socket = io()
 
     function roleHost() {
-      socket.emit('role selection', { role: 'host' });
+      socket.emit('roleSelection', { role: 'host' });
     }
 
+    function secretWordSubmission(event){
+      event.preventDefault();
+      const secretWord = document.getElementById("secretWord").value;
+
+      socket.emit("hostSecretWord", { word: secretWord });
+      console.log("Host submitted the secret word:", secretWord);
+
+      document.getElementById("host-page").style.display = 'none';
+      document.getElementById("submissionMsg").innerHTML = "Secret Word Submitted! Waiting for player";
+    }
     socket.on('showHostPage', function () {
-      console.log("Host page event received");
-      document.querySelector('role selectors').style.display = 'none';
-      document.getElementById('host page').style.display = 'block';
+      document.querySelector('#role-selectors').style.display = 'none';
+      document.getElementById('host-page').style.display = 'block';
     });
+
 
     function rolePlayer() {
-      socket.emit('role selection', { role: 'player' });
+      socket.emit('roleSelection', { role: 'player' });
     }
 
-    socket.on('show player page', function(){
-      //hide and show necessary elements for player view
+    socket.on('showPlayerPage', function(){
+      document.querySelector('#role-selectors').style.display = 'none';
+      document.getElementById('player-page').style.display = 'block';
     });
 
-  </script>
-
-  <script>
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode')
     }

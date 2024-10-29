@@ -7,8 +7,8 @@ from flask_socketio import SocketIO
 
 # Create a Flask app instance
 app = Flask(__name__)
+app.config['SECRET_WORD'] = "secret!"
 
-app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 # Define a route for the root URL ('/')
 
@@ -22,20 +22,27 @@ def hello_world():
 #The below code block is a listener from the client
 #to await a role selection. There are two buttons
 #shown in index.html which send this information to the server.
-@socketio.on('role selection')
+@socketio.on('roleSelection')
 def handle_role_selection(data):
     role = data['role']
     print(f'User selected role: {role}')
 
     # Handle role logic here
     if role == 'host':
-        #below not executing even though role should be established correctly
-        print(f'Role is host, emitting showHostPage to ' + request.sid)
         socketio.emit('showHostPage', room=request.sid)
     elif role == 'player':
-        socketio.emit('show player page', room=request.sid)
+        socketio.emit('showPlayerPage', room=request.sid)
 
-
+@socketio.on('hostSecretWord')
+def secretWordSetup(data):
+    if 'word' in data and isinstance(data['word'], str):
+        secret = data['word']
+        #SECRET WORD RECEPTION VERIFICATION HERE
+        #VAR secret UNUSED OTHERWISE. NEEDS TO BE STORED FOR PROCESSING
+        #ALSO NEEDS TO BE CHECKED FOR ONLY a-z CHARACTERS
+        print("Secret word reached server as: " + secret)
+    else:
+        print(f"Unexpected data format received: {data}")
 # Run the app when this file is executed
 if __name__ == '__main__':
     socketio.run(app)
