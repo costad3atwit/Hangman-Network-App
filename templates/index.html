@@ -39,6 +39,10 @@
   <script type="text/javascript" charset="utf-8">
     var socket = io()
 
+    socket.on('connect', function() {
+      console.log('Connected to game');
+    });
+
     function roleHost() {
       socket.emit('roleSelection', { role: 'host' });
     }
