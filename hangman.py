@@ -8,8 +8,12 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():
     message = "My name is Dominic"
-    return render_template('index.html',  
-                           message=message) 
+    return render_template('index.html')
+
+# Button method
+@app.route("/button", methods=['POST'])
+def click_button():
+    return render_template('button.html') 
 
 # Run the app when this file is executed
 if __name__ == '__main__':
