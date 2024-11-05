@@ -1,11 +1,20 @@
-import socket
+import socketio
 
-def connect_to_server():
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(("127.0.0.1", 9999))
-    print("Connected to a game.")
+# Connect to the server
+sio = socketio.Client()
 
-    client.close()
+@sio.event
+def connect():
+    print("Connected to a game")
 
-if __name__ == "__main__":
-    connect_to_server()
+@sio.event
+def disconnect():
+    print("Disconnected from game")
+
+@sio.event
+def message(data):
+    print(f"Message from server: {data}")
+
+if __name__ == '__main__':
+    sio.connect('http://127.0.0.1:5000')
+    sio.wait()
