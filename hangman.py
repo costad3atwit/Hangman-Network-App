@@ -2,7 +2,7 @@ from flask import Flask
 from flask import render_template
 from flask import request 
 #pip install flask-socketio
-#to install line 5 copy the above command into the terminal
+#to install line 6 copy the above command into the terminal
 from flask_socketio import SocketIO, send
 
 # Create a Flask app instance
