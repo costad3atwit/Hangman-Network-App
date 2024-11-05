@@ -56,9 +56,11 @@ def handle_role_selection(data):
     # Handle role logic here
     if role == 'host':
         socketio.emit('showHostPage', room=request.sid)
+        global hasHost
         hasHost = True
     elif role == 'player':
         socketio.emit('showPlayerPage', room=request.sid)
+        global hasPlayer
         hasPlayer = True
 
 @socketio.on('hostSecretWord')
