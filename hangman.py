@@ -5,6 +5,10 @@ from flask import request
 #to install line 5 copy the above command into the terminal
 from flask_socketio import SocketIO
 
+# Bool flag to "remember" when we have both types of players
+hasHost = False
+hasPlayer = False
+
 # Create a Flask app instance
 app = Flask(__name__)
 app.config['SECRET_WORD'] = "secret!"
@@ -30,6 +34,7 @@ def handle_role_selection(data):
     # Handle role logic here
     if role == 'host':
         socketio.emit('showHostPage', room=request.sid)
+        hasHost = True
     elif role == 'player':
         socketio.emit('showPlayerPage', room=request.sid)
 
