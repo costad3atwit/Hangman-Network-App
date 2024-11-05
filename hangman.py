@@ -8,10 +8,11 @@ from flask_socketio import SocketIO, send
 # Bool flag to "remember" when we have both types of players
 hasHost = False
 hasPlayer = False
+secretWord = ""
 
 # Create a Flask app instance
 app = Flask(__name__)
-app.config['SECRET_WORD'] = "secret!"
+app.config['SECRET_KEY'] = "secret!"
 
 socketio = SocketIO(app)
 # Define a route for the root URL ('/')
@@ -42,32 +43,38 @@ def handle_connect():
 #shown in index.html which send this information to the server.
 @socketio.on('roleSelection')
 def handle_role_selection(data):
+    global hasHost, hasPlayer
     role = data['role']
     print(f'User selected role: {role}')
 
     # Handle role logic here
     if role == 'host':
-        socketio.emit('showHostPage', room=request.sid)
         hasHost = True
+        socketio.emit('showHostPage', room=request.sid)
+        
+        
     elif role == 'player':
-        socketio.emit('showPlayerPage', room=request.sid)
         hasPlayer = True
+        socketio.emit('showWaitingPage', room=request.sid)
+        
 
 @socketio.on('hostSecretWord')
 def secretWordSetup(data):
     if 'word' in data and isinstance(data['word'], str):
         secret = data['word']
-        #SECRET WORD RECEPTION VERIFICATION HERE
-        #VAR secret UNUSED OTHERWISE. NEEDS TO BE STORED FOR PROCESSING
-        #ALSO NEEDS TO BE CHECKED FOR ONLY a-z CHARACTERS
-        print("Secret word reached server as: " + secret)
-        if hasPlayer:
-            startGame(secret)
+        
+        if secret.isalpha():
+            print("Secret Word received and validated:" + secret)
+            if hasPlayer:
+                print("Starting game with secret word" + secret)
+                startGame(secret)
+        else:
+            print("Invalid secret word format, only alphabetic characters allowed.")
     else:
         print(f"Unexpected data format received: {data}")
 
 def startGame (secretWord):
-    socketio.emit('startGame', secretWord)
+    socketio.emit('startGame', {'secretWord': secretWord})
 
 # Run the app when this file is executed
 if __name__ == '__main__':

@@ -11,11 +11,11 @@
 <body>
   <h1>HANGMAN</h1>
     <div> 
-    <button type="button" id = "dark-mode-btn"onclick="toggleDarkMode()">Dark Mode Toggle</button>
+    <button type="button" id = "dark-mode-btn" onclick="toggleDarkMode()">Dark Mode Toggle</button>
   </div>
     <div id="role-selectors">
-      <button type="button" id = "btn" onclick="roleHost()">Play as Host</button>
-      <button class="button" type="button" onclick="rolePlayer()">Play as Player</button>
+      <button type="button" id = "hostBtn" onclick="roleHost()">Play as Host</button>
+      <button class="button" type="playerBtn" onclick="rolePlayer()">Play as Player</button>
   </div>
 
   <div id="host-page" style="display: none;" >
@@ -68,10 +68,13 @@
     }
 
     socket.on('showPlayerPage', function(){
-      document.querySelector('#role-selectors').style.display = 'none';
       document.getElementById('player-page').style.display = 'block';
     });
 
+    socket.on('showWaitingPage', function(){
+      document.querySelector('#role-selectors').style.display = 'none';
+      document.getElementById("submissionMsg").innerHTML = "Role selected! Waiting for host to setup secret word";
+    })
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode')
     }
