@@ -9,13 +9,17 @@
 </head>
 
 <body>
-  <h1>HANGMAN</h1>
-    <div> 
-    <button type="button" id = "dark-mode-btn"onclick="toggleDarkMode()">Dark Mode Toggle</button>
+  <div>
+    <button type="button" class = "button dark-mode-btn" onclick="toggleDarkMode()">Dark Mode Toggle</button>
   </div>
+
+  <div class="center">
+    <div class="game_title">HANGMAN</div>
+  
     <div id="role-selectors">
-      <button type="button" id = "btn" onclick="roleHost()">Play as Host</button>
-      <button class="button" type="button" onclick="rolePlayer()">Play as Player</button>
+      <button type="button" class="button host-btn" onclick="roleHost()">Play as Host</button>
+      <button type="button" class="button player-btn" onclick="rolePlayer()">Play as Player</button>
+    </div>
   </div>
 
   <div id="host-page" style="display: none;" >
