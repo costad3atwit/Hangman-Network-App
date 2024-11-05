@@ -4,6 +4,8 @@ from flask import request
 #pip install flask-socketio
 #to install line 6 copy the above command into the terminal
 from flask_socketio import SocketIO, send
+from Player1 import Player1
+from Player2 import Player2
 
 # Bool flag to "remember" when we have both types of players
 hasHost = False
@@ -16,7 +18,7 @@ app.config['SECRET_WORD'] = "secret!"
 socketio = SocketIO(app)
 # Define a route for the root URL ('/')
 
-player_count=0
+player_connections = {}
 
 @app.route('/')
 def hello_world():
@@ -27,15 +29,20 @@ def hello_world():
 
 @socketio.on('connect')
 def handle_connect():
-    global player_count
-    player_count += 1
+    global player_connections
+    sid = request.sid
 
-    if player_count == 1:
+    if len(player_connections) ==0:
+        player_connections[sid] = "Player 1"
         print("Player 1 joined")
         send("Player 1 joined", broadcast=True)
-    elif player_count == 2:
+        player1=Player1()
+    elif len(player_connections) ==1:
+        player_connections[sid] = "Player 2"
         print("Player 2 joined")
         send("Player 2 joined", broadcast=True)
+        player2=Player2()
+        
         
 #The below code block is a listener from the client
 #to await a role selection. There are two buttons
@@ -43,7 +50,8 @@ def handle_connect():
 @socketio.on('roleSelection')
 def handle_role_selection(data):
     role = data['role']
-    print(f'User selected role: {role}')
+    player = player_connections[request.sid]
+    print(f'{player} selected role: {role}')
 
     # Handle role logic here
     if role == 'host':
