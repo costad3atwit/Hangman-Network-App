@@ -75,6 +75,10 @@
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode')
     }
+
+    socket.on('startGame', function(){
+      document.getElementById("submissionMsg").style.display = 'none';
+    })
   </script>
 </body>
 

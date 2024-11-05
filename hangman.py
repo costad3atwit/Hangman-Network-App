@@ -51,6 +51,7 @@ def handle_role_selection(data):
         hasHost = True
     elif role == 'player':
         socketio.emit('showPlayerPage', room=request.sid)
+        hasPlayer = True
 
 @socketio.on('hostSecretWord')
 def secretWordSetup(data):
@@ -60,8 +61,14 @@ def secretWordSetup(data):
         #VAR secret UNUSED OTHERWISE. NEEDS TO BE STORED FOR PROCESSING
         #ALSO NEEDS TO BE CHECKED FOR ONLY a-z CHARACTERS
         print("Secret word reached server as: " + secret)
+        if hasPlayer:
+            startGame(secret)
     else:
         print(f"Unexpected data format received: {data}")
+
+def startGame (secretWord):
+    socketio.emit('startGame', secretWord)
+
 # Run the app when this file is executed
 if __name__ == '__main__':
     socketio.run(app)
