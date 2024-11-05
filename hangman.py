@@ -50,7 +50,7 @@ def handle_connect():
 #shown in index.html which send this information to the server.
 @socketio.on('roleSelection')
 def handle_role_selection(data):
-    global hasHost, hasPlayer
+    global hasHost,hasPlayer
     role = data['role']
     player = player_connections[request.sid]
     print(f'{player} selected role: {role}')
@@ -59,11 +59,7 @@ def handle_role_selection(data):
     if role == 'host':
         hasHost = True
         socketio.emit('showHostPage', room=request.sid)
-        global hasHost
-        hasHost = True
     elif role == 'player':
-        socketio.emit('showPlayerPage', room=request.sid)
-        global hasPlayer
         hasPlayer = True
         socketio.emit('showWaitingPage', room=request.sid)
         
