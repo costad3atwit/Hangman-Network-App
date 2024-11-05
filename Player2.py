@@ -3,6 +3,10 @@ import socketio
 # Connect to the server
 sio = socketio.Client()
 
+class Player2:
+    def __init__(self):
+        self=self
+
 @sio.event
 def connect():
     print("Connected to a game")
