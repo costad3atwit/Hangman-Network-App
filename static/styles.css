@@ -1,18 +1,41 @@
+/*
+Color Pallete
+Background: #ECC8AF
+Text Color: #495867
+Darkmode Button Color: #C18C5D
+Buttom Color: #CE796B
+Other Potential Color: #E7AD99
+*/
+
 body{
-    background-color: white;
-    color: black;
+    background-color: #ECC8AF;
+    color: #495867;
     transition: background-color 0.5s, color 0.5s;
     font-family: Georgia, serif;
 }
 
 body.dark-mode {
-    background-color: black;
-    color: white;
+    background-color: #495867;
+    color: #ECC8AF;
 }
 
 .button {
     border: none;
-    color: white;
+    background-color: #CE796B;
+    color: #ECC8AF;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+input[type=reset] {
+    border: none;
+    background-color: #CE796B;
+    color: #ECC8AF;
     padding: 15px 32px;
     text-align: center;
     text-decoration: none;
@@ -23,21 +46,14 @@ body.dark-mode {
 }
 
 .dark-mode-btn{
-    background-color: #333;
+    background-color: #C18C5D;
     position: fixed;
     top: 10px;
     right: 10px;
 }
 
-.player-btn{
-    background-color: #008CBA;
-}
-
-.host-btn{
-    background-color: #f44336;
-}
-
 .center{
+    padding: 25px 25px 25px 25px;
     display: grid;
     place-items: center;
     justify-content: center;
