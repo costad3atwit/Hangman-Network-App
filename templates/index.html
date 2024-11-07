@@ -30,18 +30,30 @@
       <input type="submit" value="Submit">
     </form>
   </div>
+  <div id="host-view" style="display: none;">
+    <h2>Game Status</h2>
+    <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
+    <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
+    <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
+  </div>
   <div id="player-page" style="display: none;" >
     <h2>Enter Guesses </h2>
-    <form>
+    <form id = "guess-form" onsubmit="guessSubmission(event)">
       <label for="secret-word">Guess:</label>
-      <input type="text" id="fname" name="fname"><br><br>
+      <input type="text" id="guess" name="guess" required><br><br>
       <input type="submit" value="Submit">
     </form>
+    <h2>Game Status</h2>
+    <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
+    <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
+    <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
   </div>
   <h2 id="submissionMsg"></h2>
 
   <script type="text/javascript" charset="utf-8">
     var socket = io()
+    var currentRoom = '';
+    var playerRole = "";
 
     socket.on('connect', function() {
       console.log('Connected to game');
@@ -49,6 +61,7 @@
 
     function roleHost() {
       socket.emit('roleSelection', { role: 'host' });
+      playerRole = 'host'
     }
 
     function secretWordSubmission(event){
@@ -69,20 +82,64 @@
 
     function rolePlayer() {
       socket.emit('roleSelection', { role: 'player' });
+      playerRole = 'player'
     }
 
     socket.on('showPlayerPage', function(){
-      document.querySelector('#role-selectors').style.display = 'none';
       document.getElementById('player-page').style.display = 'block';
+    });
+
+    socket.on('showWaitingPage', function(){
+      document.querySelector('#role-selectors').style.display = 'none';
+      document.getElementById("submissionMsg").innerHTML = "Role selected! Waiting for host to setup secret word";
+    })
+
+    socket.on('correctGuess', function(data) {
+      // Update the UI for correct guess
+      console.log(`Correct guess: ${data.letter}`);
+      // Add logic to update the guessed letters and any other relevant info
+    });
+
+    socket.on('incorrectGuess', function(data) {
+      // Update the UI for incorrect guess
+      console.log(`Incorrect guess: ${data.letter}`);
+      // Add logic to increment incorrect guess count and update UI
     });
 
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode')
     }
 
-    socket.on('startGame', function(){
-      document.getElementById("submissionMsg").style.display = 'none';
-      document.getElementById("player-page").style.display = 'block';
+    function guessSubmission(event){
+      event.preventDefault;
+
+      const guess = document.getElementById("guess").value;
+      socket.emit("playerGuess", { guess: guess, room: currentRoom });
+
+      console.log("Player submitted guess:", guess);
+
+      document.getElementById("guess").value = ''; // Clear the input field after submission
+
+      // FIX BELOW TO UPDATE HANGMAN/CORRECT GUESSES 
+      document.getElementById("submissionMsg").innerHTML = `You guessed: ${guess}`;
+    }
+
+    socket.on('startGame', function(data){
+      currentRoom = data.room; // Set the current room
+      if (playerRole === "player") {
+        document.getElementById("secretWordText").textContent = data.secretWord.replace(/./g, '*'); // Mask for players
+        document.getElementById("player-page").style.display = 'block'; // Show player view
+        document.getElementById("submissionMsg").style.display = 'none'; // Hide message
+      }
+      else if (playerRole === "host") {
+        document.getElementById("secretWordText").textContent = data.secretWord; // Actual word for host
+        document.getElementById("host-view").style.display = 'block'; // Show host view
+      }
+
+      // Update common game status information
+      document.getElementById("incorrectGuesses").textContent = data.incorrectGuesses || 0; // Display number of incorrect guesses
+      document.getElementById("lettersGuessed").textContent = data.lettersGuessed ? JSON.stringify(data.lettersGuessed) : "[]"; // Display guessed letters
+      console.log("Game started with secret word:", data.secretWord);
     })
   </script>
 </body>
