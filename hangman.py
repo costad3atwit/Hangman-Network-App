@@ -104,9 +104,7 @@ def secretWordSetup(data):
 
 @socketio.on('playerGuess')
 def handle_player_guess(data):
-    guess = data['guess']
-    room_name = data['room']
-    print(f"Player guessed: {guess} in room {room_name}")
+    
 
     if room_name in rooms:
         room_data = rooms[room_name]
