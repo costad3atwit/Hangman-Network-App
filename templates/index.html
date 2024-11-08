@@ -1,7 +1,7 @@
 <html>
 
 <head>
-  <title>Flask Static Demo</title>
+  <title>Hangman Webapp</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
     integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
@@ -17,38 +17,50 @@
     <div class="game_title">HANGMAN</div>
   
     <div id="role-selectors">
-      <button type="button" class="button host-btn" onclick="roleHost()">Play as Host</button>
-      <button type="button" class="button player-btn" onclick="rolePlayer()">Play as Player</button>
+      <button type="button" class="button" onclick="roleHost()">Play as Host</button>
+      <button type="button" class="button" onclick="rolePlayer()">Play as Player</button>
     </div>
+
+    <div id="host-page" style="display: none;" >
+      <h2>Enter the Secret Word </h2>
+      <form id = "host-form" onsubmit="secretWordSubmission(event)">
+        <label for="secret-word">Secret Word:</label>
+        <input type="text" id="secretWord" name="secretWord" required><br><br>
+        <input type="submit" class="button" value="Submit">
+      </form>
+    </div>
+    <div id="host-view" style="display: none;">
+      <h2>Game Status</h2>
+      <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
+      <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
+      <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
+    </div>
+    <div id="player-page" style="display: none;" >
+      <h2>Enter Guesses </h2>
+      <form id = "guess-form" onsubmit="guessSubmission(event)">
+        <label for="secret-word">Guess:</label>
+        <input type="text" id="guess" name="guess" required><br><br>
+        <input type="submit" value="Submit">
+      </form>
+      <h2>Game Status</h2>
+      <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
+      <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
+      <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
+    </div>
+    <h2 id="submissionMsg"></h2>
   </div>
 
-  <div id="host-page" style="display: none;" >
-    <h2>Enter the Secret Word </h2>
-    <form id = "host-form" onsubmit="secretWordSubmission(event)">
-      <label for="secret-word">Secret Word:</label>
-      <input type="text" id="secretWord" name="secretWord" required><br><br>
-      <input type="submit" value="Submit">
-    </form>
+  <div>
+    <pre>
+  -----
+  |   |
+      |
+      |
+      |
+      |
+===========
+    </pre>
   </div>
-  <div id="host-view" style="display: none;">
-    <h2>Game Status</h2>
-    <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
-    <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-    <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
-  </div>
-  <div id="player-page" style="display: none;" >
-    <h2>Enter Guesses </h2>
-    <form id = "guess-form" onsubmit="guessSubmission(event)">
-      <label for="secret-word">Guess:</label>
-      <input type="text" id="guess" name="guess" required><br><br>
-      <input type="submit" value="Submit">
-    </form>
-    <h2>Game Status</h2>
-    <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
-    <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-    <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
-  </div>
-  <h2 id="submissionMsg"></h2>
 
   <script type="text/javascript" charset="utf-8">
     var socket = io()
@@ -107,7 +119,8 @@
     });
 
     function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode')
+      document.body.classList.toggle('dark-mode');
+      document.center.classList.toggle('dark-mode');
     }
 
     function guessSubmission(event){
