@@ -22,8 +22,6 @@ app.config['SECRET_KEY'] = "secret!"
 socketio = SocketIO(app)
 # Define a route for the root URL ('/')
 
-player_connections = {}
-
 @app.route('/')
 def hello_world():
     message = "Hangman App! :P"
@@ -69,9 +67,18 @@ def handle_role_selection(data):
     if role == 'host':
         hasHost = True
         socketio.emit('showHostPage', room=request.sid)
+        #If has a player already, add them to the room and update their screen
+        if player_connections:
+            #connect player to oldest open room
+            print("Connect player to oldest open room")     
     elif role == 'player':
         hasPlayer = True
-        socketio.emit('showWaitingPage', room=request.sid)
+        if hasHost:
+            data = {'message': "Waiting for the host to pick the secret word"}
+            socketio.emit('showWaitingPage',data, room=request.sid)
+        else:
+            data = {'message': "Waiting for a host to join"}
+            socketio.emit('showWaitingPage',data, request.sid)
         
 
 @socketio.on('hostSecretWord')
