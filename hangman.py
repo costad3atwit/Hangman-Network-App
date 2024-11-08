@@ -88,10 +88,19 @@ def secretWordSetup(data):
                 rooms[room_name] = {
                     "secret_word": secret.lower(),  # Store secret word in lowercase for consistent validation
                     "guessed_letters": [],
-                    "incorrect_guesses": 0
+                    "incorrect_guesses": 0,
+                    "game_over": False,  # Initially set game over to False
+                    "revealed_word": ["_"] * len(secret)  # Initialize the revealed word with underscores
                 }
                 print(f"Secret Word '{secret}' received and validated for room:", room_name)
                 
+                  # Check if the word is already "guessed" (if all letters are revealed)
+                revealed_word = rooms[room_name]["revealed_word"]
+                if '_' not in revealed_word:  # If there are no underscores, the word is already guessed
+                    rooms[room_name]['game_over'] = True
+                    socketio.emit('gameOver', {'message': 'You won! Congratulations!'}, room=room_name)
+                    print("The word was already guessed. Game Over!")
+             
                 # Notify players in the room to start the game
                 startGame(secret, room_name)
             else:
@@ -131,6 +140,9 @@ def handle_player_guess(data):
             'guessed_letters': list(guessed_letters),
             'incorrect_guesses': room_data['incorrect_guesses']
         }, room=room_name)
+
+    
+
     else:
         print(f"Room {room_name} does not exist. Ignoring guess.")
 
