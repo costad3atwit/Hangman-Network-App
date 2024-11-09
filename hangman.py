@@ -121,7 +121,9 @@ def handle_connect():
         send("Connection limit reached.", room=sid)
         
         
-
+@socketio.on('hostSecretWord')
+def validate_and_store_secret(data):
+    
 
 @socketio.on('roleSelection')
 def handle_role_selection(data):
