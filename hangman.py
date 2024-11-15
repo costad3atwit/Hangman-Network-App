@@ -17,7 +17,7 @@ rooms = {}
 
 # Hangman ASCII art
 hangman_stages = [
-    """
+    r"""
    -----
    |   |
        |
@@ -26,25 +26,25 @@ hangman_stages = [
        |
 =========
     """,
-    """
-   -----
-   |   |
-   O   |
-       |
-       |
-       |
-=========
-    """,
-    """
+    r"""
    -----
    |   |
    O   |
+       |
+       |
+       |
+=========
+    """,
+    r"""
+   -----
+   |   |
+   O   |
    |   |
        |
        |
 =========
     """,
-    """
+    r"""
    -----
    |   |
    O   |
@@ -53,7 +53,7 @@ hangman_stages = [
        |
 =========
     """,
-    """
+    r"""
    -----
    |   |
    O   |
@@ -62,7 +62,7 @@ hangman_stages = [
        |
 =========
     """,
-    """
+    r"""
    -----
    |   |
    O   |
@@ -71,7 +71,7 @@ hangman_stages = [
        |
 =========
     """,
-    """
+    r"""
    -----
    |   |
    O   |
@@ -119,17 +119,14 @@ def handle_connect():
     else:
         print("Connection limit reached.")
         send("Connection limit reached.", room=sid)
-        
-        
-# @socketio.on('hostSecretWord')
-# def validate_and_store_secret(data):
-    
 
 @socketio.on('roleSelection')
 def handle_role_selection(data):
+    global player_connections
     global hasHost, hasPlayer
+    sid = request.sid
     role = data['role']
-    player = player_connections[request.sid]
+    player = player_connections[sid]
     print(f'{player} selected role: {role}')
 
     # Handle role logic here
@@ -137,6 +134,14 @@ def handle_role_selection(data):
         hasHost = True
         socketio.emit('showHostPage', room=request.sid)
         #If has a player already, add them to the room and update their screen
+
+        player_connections[sid] = "Host"
+        room_name = f"room_{sid}"  # Create a unique room for the host
+        host_rooms[sid] = room_name
+        join_room(room_name)
+        print("Host joined, room created:", room_name)
+        send("Host joined", broadcast=True)
+
         if player_connections:
             #connect player to oldest open room
             print("Connect player to oldest open room")     
@@ -147,7 +152,7 @@ def handle_role_selection(data):
             socketio.emit('showWaitingPage',data, room=request.sid)
         else:
             data = {'message': "Waiting for a host to join"}
-            socketio.emit('showWaitingPage',data, request.sid)
+            socketio.emit('showWaitingPage',data, room=request.sid)
         
 
 @socketio.on('hostSecretWord')
@@ -190,6 +195,8 @@ def secretWordSetup(data):
 @socketio.on('playerGuess')
 def handle_player_guess(data):
     
+    room_name = data['room']
+    guess = data['guess']
 
     if room_name in rooms:
         room_data = rooms[room_name]
