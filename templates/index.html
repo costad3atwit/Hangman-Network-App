@@ -38,9 +38,9 @@
 
     <div id="host-view" style="display: none;">
       <h2>Game Status</h2>
-      <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
+      <p id="secretWordDisplayHost">Secret Word: <span id="secretWordTextHost"></span></p>
       <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-      <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
+      <p>Letters Guessed: <span id="lettersGuessedHost">[]</span></p>
     </div>
 
     <div id="player-page" style="display: none;">
@@ -70,6 +70,12 @@
       </div>
     </div>
   </div>
+  <div id="incorrectGuessesDisplay">
+    <h3>Incorrect Guesses:</h3>
+    <ul id="incorrectGuessesList">
+      <!-- Incorrect guesses will be displayed here -->
+    </ul>
+  </div>
 
   <script type="text/javascript" charset="utf-8">
     var socket = io();
@@ -78,6 +84,11 @@
 
     socket.on('connect', function () {
       console.log('Connected to game');
+    });
+
+    socket.on('disconnect ', function() {
+      console.log('Disconnected from game');
+      socket.removeAllListeners(); // Remove previous listeners
     });
 
     function roleHost() {
