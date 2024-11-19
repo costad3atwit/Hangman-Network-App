@@ -29,11 +29,12 @@
         <input type="submit" class="button" value="Submit">
       </form>
     </div>
+    
     <div id="host-view" style="display: none;">
       <h2>Game Status</h2>
-      <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
+      <p id="secretWordDisplayHost">Secret Word: <span id="secretWordTextHost"></span></p>
       <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-      <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
+      <p>Letters Guessed: <span id="lettersGuessedHost">[]</span></p>
     </div>
     <div id="player-page" style="display: none;" >
       <h2>Enter Guesses </h2>
@@ -43,9 +44,9 @@
         <input type="submit" value="Submit">
       </form>
       <h2>Game Status</h2>
-      <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
-      <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-      <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
+      <p id="secretWordDisplayPlayer">Secret Word: <span id="secretWordTextPlayer"></span></p>
+      <p>Incorrect Guesses: <span id="incorrectGuessesPlayer">0</span></p>
+      <p>Letters Guessed: <p id="lettersGuessedPlayer">[]</p></p>
     </div>
     <h2 id="submissionMsg"></h2>
   </div>
@@ -131,19 +132,38 @@
       console.log(`Incorrect guess: ${data.letter}`);
       incorrectGuesses.push(data.letter);  // Add incorrect guess
       updateIncorrectGuesses();  // Update incorrect guesses display
-      updateHangman(data.hangman_stage);  // Update hangman art
+      updateHangmanArt(data.hangman_stage);  // Update hangman art
     });
 
     // Update the displayed secret word
     function updateSecretWord(revealedWord) {
       // Set the revealed word to the display
-      document.getElementById('secretWordText').textContent = revealedWord;
+      console.log("Attempting to update secretWordText with revealed portion: ", revealedWord);
+      if(playerRole === 'player'){
+        document.getElementById('secretWordTextPlayer').innerText = revealedWord;
+      }
+      else if(playerRole === 'host'){
+        document.getElementById('secretWordTextHost').innerText = revealedWord;
+      }
+      else{
+        console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
+      }
     }
 
     // Update the list of guessed letters
     function updateLettersGuessed(guessedLetters) {
       // Update the letters guessed list
-      document.getElementById('lettersGuessed').textContent = guessedLetters.join(', ');
+      console.log("Attempting to update lettersGuessed with correctLetters: ", guessedLetters.join(', '));
+      // document.getElementById('lettersGuessedHost').innerText = guessedLetters.join(', ');
+      if(playerRole === 'player'){
+        document.getElementById('lettersGuessedPlayer').textContent = guessedLetters.join(', ');
+      }
+      else if(playerRole === 'host'){
+        document.getElementById('lettersGuessedHost').textContent = guessedLetters.join(', ');
+      }
+      else{
+        console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
+      }
     }
 
     // Update the incorrect guesses display
@@ -196,17 +216,13 @@
     console.log('Game started in room ' + currentRoom);
     console.log('If the above room is non-null check visibility of currentRoom variable to other functions');
     if (playerRole === "player") {
-        document.getElementById("secretWordText").textContent = data.secretWord.replace(/./g, '*'); // Mask for players
+        document.getElementById("secretWordTextPlayer").textContent = data.secretWord.replace(/./g, '*'); // Mask for players
         document.getElementById("player-page").style.display = 'block'; // Show player view
         // document.getElementById("submissionMsg").style.display = 'none'; // Hide message
     } else if (playerRole === "host") {
-        document.getElementById("secretWordText").textContent = data.secretWord; // Show actual word for host
+        document.getElementById("secretWordTextHost").textContent = data.secretWord; // Show actual word for host
         document.getElementById("host-view").style.display = 'block'; // Show host view
     }
-
-    // Update game status information
-    document.getElementById("incorrectGuesses").textContent = data.incorrectGuesses || 0; // Incorrect guesses
-    document.getElementById("lettersGuessed").textContent = data.lettersGuessed ? JSON.stringify(data.lettersGuessed) : "[]"; // Letters guessed
 })
   </script>
 </body>
