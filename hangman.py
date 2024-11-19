@@ -304,6 +304,16 @@ def startGame (secretWord, room_name):
     print('Starting game in room: ' + gameData['room'])
     socketio.emit('startGame', gameData, room=room_name)
 
+  
+
+def check_win_condition(room_name, secret_word, guessed_letters):
+    # Check if all letters of the secret word have been guessed
+    if all(letter in guessed_letters for letter in secret_word):
+        # If all letters are guessed, it's a win
+        rooms[room_name]['game_over'] = True  # Mark the game as over
+        socketio.emit('gameWon', {'message': 'You won! Congratulations!'}, room=room_name)
+        print(f"Game Over! {room_name} has won the game!")
+
 # Run the app when this file is executed
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0',port=5000)
