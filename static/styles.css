@@ -1,13 +1,5 @@
-/*
-Color Pallete
-Background: #ECC8AF
-Text Color: #495867
-Darkmode Button Color: #C18C5D
-Buttom Color: #CE796B
-Other Potential Color: #E7AD99
-*/
-
-body{
+/* General Layout */
+body {
     background-color: #ECC8AF;
     color: #495867;
     transition: background-color 0.5s, color 0.5s;
@@ -19,54 +11,113 @@ body.dark-mode {
     color: #ECC8AF;
 }
 
-.button {
+/* Buttons */
+.button,
+#host-page input[type="submit"],
+#role-selectors button {
     border: none;
     background-color: #CE796B;
     color: #ECC8AF;
-    padding: 15px 32px;
+    padding: 10px 20px;
+    font-size: 1em;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
     cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    margin: 4px 2px;
 }
 
-input[type=reset] {
-    border: none;
-    background-color: #CE796B;
-    color: #ECC8AF;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-}
-
-.dark-mode-btn{
+.button:hover,
+#host-page input[type="submit"]:hover,
+#role-selectors button:hover {
     background-color: #C18C5D;
+}
+
+.dark-mode-btn {
     position: fixed;
     top: 10px;
     right: 10px;
+    background-color: #C18C5D;
 }
 
-.center{
-    padding: 25px 25px 25px 25px;
-    display: grid;
-    place-items: center;
-    justify-content: center;
-    position: absolute;
-    top:  50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-}
-
-.game_title{
-    font-size: 2em;
+/* Game Title */
+.game_title {
+    font-size: 2.5em;
     text-align: center;
-    position: relative;
-    z-index: 2;
-    padding-bottom: 10px
+    margin-bottom: 20px;
+}
+
+/* Centered Layout */
+.center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 20px;
+}
+
+/* Role Selectors */
+#role-selectors {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#role-selectors button {
+    margin: 0 10px;
+}
+
+/* Form Section (Enter the Secret Word) */
+#host-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(236, 200, 175, 0.8);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+}
+
+#host-page h2 {
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    color: #495867;
+}
+
+#host-page label {
+    font-size: 1em;
+    margin-bottom: 10px;
+    display: block;
+}
+
+#host-page input[type="text"] {
+    padding: 10px;
+    font-size: 1em;
+    margin-bottom: 15px;
+    width: 100%;
+    border: 1px solid #CE796B;
+    border-radius: 5px;
+}
+
+/* Hangman Image Section */
+.hangman {
+    font-size: 1.5em;
+    line-height: 1.5em;
+    color: #495867;
+    text-align: center;
+    min-width: 200px;
+    margin-top: 30px;
+}
+
+/* Game Container (Form + Hangman) */
+.game-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
 }
