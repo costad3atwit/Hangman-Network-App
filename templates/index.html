@@ -50,7 +50,7 @@
     <h2 id="submissionMsg"></h2>
   </div>
 
-  <div>
+  <div id="hangman" class = "hangman-art">
     <pre>
   -----
   |   |
@@ -61,14 +61,27 @@
 ===========
     </pre>
   </div>
+  <div id="incorrectGuessesDisplay">
+    <h3>Incorrect Guesses:</h3>
+    <ul id="incorrectGuessesList">
+      <!-- Incorrect guesses will be displayed here -->
+    </ul>
+  </div>
 
   <script type="text/javascript" charset="utf-8">
-    var socket = io()
-    var currentRoom = '';
-    var playerRole = "";
+    let incorrectGuesses = [];  // Incorrect guesses
+    let guessedLetters = [];  // All guessed letters
+    let socket = io()
+    let currentRoom;
+    let playerRole = "";
 
     socket.on('connect', function() {
       console.log('Connected to game');
+    });
+
+    socket.on('disconnect ', function() {
+      console.log('Disconnected from game');
+      socket.removeAllListeners(); // Remove previous listeners
     });
 
     function roleHost() {
@@ -106,54 +119,95 @@
       document.getElementById("submissionMsg").innerHTML = "Role selected! Waiting for host to setup secret word";
     })
 
+    // Listen for correct guesses
     socket.on('correctGuess', function(data) {
-      // Update the UI for correct guess
       console.log(`Correct guess: ${data.letter}`);
-      // Add logic to update the guessed letters and any other relevant info
+      updateSecretWord(data.revealed_word);  // Update the secret word text
+      updateLettersGuessed(data.guessedLetters);  // Update guessed letters display
     });
 
+    // Listen for incorrect guesses
     socket.on('incorrectGuess', function(data) {
-      // Update the UI for incorrect guess
       console.log(`Incorrect guess: ${data.letter}`);
-      // Add logic to increment incorrect guess count and update UI
+      incorrectGuesses.push(data.letter);  // Add incorrect guess
+      updateIncorrectGuesses();  // Update incorrect guesses display
+      updateHangman(data.hangman_stage);  // Update hangman art
     });
+
+    // Update the displayed secret word
+    function updateSecretWord(revealedWord) {
+      // Set the revealed word to the display
+      document.getElementById('secretWordText').textContent = revealedWord;
+    }
+
+    // Update the list of guessed letters
+    function updateLettersGuessed(guessedLetters) {
+      // Update the letters guessed list
+      document.getElementById('lettersGuessed').textContent = guessedLetters.join(', ');
+    }
+
+    // Update the incorrect guesses display
+    function updateIncorrectGuesses() {
+      const list = document.getElementById('incorrectGuessesList');
+      list.innerHTML = '';  // Clear current list
+      incorrectGuesses.forEach(letter => {
+        const listItem = document.createElement('li');
+        listItem.textContent = letter;
+        list.appendChild(listItem);
+      });
+    }
+
 
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
       document.center.classList.toggle('dark-mode');
     }
 
-    function guessSubmission(event){
-      event.preventDefault;
+    function updateHangmanArt(incorrectGuesses) {
+    const hangmanStages = [
+        `  -----\n  |   |\n      |\n      |\n      |\n      |\n===========`,
+        `  -----\n  |   |\n  O   |\n      |\n      |\n      |\n===========`,
+        `  -----\n  |   |\n  O   |\n  |   |\n      |\n      |\n===========`,
+        `  -----\n  |   |\n  O   |\n /|   |\n      |\n      |\n===========`,
+        `  -----\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n===========`,
+        `  -----\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n===========`,
+        `  -----\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n===========`
+    ];
+    document.getElementById('hangman').innerText = hangmanStages[incorrectGuesses];
+}
 
-      const guess = document.getElementById("guess").value;
-      socket.emit("playerGuess", { guess: guess, room: currentRoom });
-
-      console.log("Player submitted guess:", guess);
-
-      document.getElementById("guess").value = ''; // Clear the input field after submission
-
-      // FIX BELOW TO UPDATE HANGMAN/CORRECT GUESSES 
-      document.getElementById("submissionMsg").innerHTML = `You guessed: ${guess}`;
+    function guessSubmission(event) {
+        event.preventDefault();
+        const guess = document.getElementById("guess").value.trim();
+        console.log("Guess: " + guess);
+        if (!/^[a-zA-Z]$/.test(guess)) {
+          console.log("Guess non-alphabetic")
+            document.getElementById("submissionMsg").display = 'block';
+            document.getElementById("submissionMsg").innerHTML = "Invalid guess. Please enter a single letter.";
+            return;
+        }
+        console.log("Player submitted guess:", guess, " in room", currentRoom);
+        document.getElementById("guess").value = ''; // Clear input field
+        socket.emit("playerGuess", { guess: guess, room: currentRoom });
     }
 
-    socket.on('startGame', function(data){
-      currentRoom = data.room; // Set the current room
-      if (playerRole === "player") {
+    socket.on('startGame', function(data) {
+    currentRoom = data.room;  // Ensure this is set
+    console.log('Game started in room ' + currentRoom);
+    console.log('If the above room is non-null check visibility of currentRoom variable to other functions');
+    if (playerRole === "player") {
         document.getElementById("secretWordText").textContent = data.secretWord.replace(/./g, '*'); // Mask for players
         document.getElementById("player-page").style.display = 'block'; // Show player view
-        document.getElementById("submissionMsg").style.display = 'none'; // Hide message
-      }
-      else if (playerRole === "host") {
-        document.getElementById("secretWordText").textContent = data.secretWord; // Actual word for host
+        // document.getElementById("submissionMsg").style.display = 'none'; // Hide message
+    } else if (playerRole === "host") {
+        document.getElementById("secretWordText").textContent = data.secretWord; // Show actual word for host
         document.getElementById("host-view").style.display = 'block'; // Show host view
-      }
+    }
 
-      // Update common game status information
-      document.getElementById("incorrectGuesses").textContent = data.incorrectGuesses || 0; // Display number of incorrect guesses
-      document.getElementById("lettersGuessed").textContent = data.lettersGuessed ? JSON.stringify(data.lettersGuessed) : "[]"; // Display guessed letters
-      console.log("Game started with secret word:", data.secretWord);
-    })
+    // Update game status information
+    document.getElementById("incorrectGuesses").textContent = data.incorrectGuesses || 0; // Incorrect guesses
+    document.getElementById("lettersGuessed").textContent = data.lettersGuessed ? JSON.stringify(data.lettersGuessed) : "[]"; // Letters guessed
+})
   </script>
 </body>
 
