@@ -20,7 +20,7 @@
       <!-- Game Title -->
       <div class="game_title">HANGMAN</div>
 
-      <div id="role-selectors" style="text-align: center;">
+      <div id="role-selectors">
         <button type="button" class="button" onclick="roleHost()">Play as Host</button>
         <button type="button" class="button" onclick="rolePlayer()">Play as Player</button>
       </div>
@@ -28,6 +28,9 @@
 
     <!-- Host Page Section -->
     <div id="host-page" style="display: none;">
+      <!-- Game Title -->
+      <div class="game_title">HANGMAN</div>
+
       <h2>Enter the Secret Word</h2>
       <form id="host-form" onsubmit="secretWordSubmission(event)">
         <label for="secret-word">Secret Word:</label>
@@ -37,55 +40,71 @@
     </div>
 
     <div id="host-view" style="display: none;">
-      <h2>Game Status</h2>
-      <p id="secretWordDisplayHost">Secret Word: <span id="secretWordTextHost"></span></p>
-      <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-      <p>Letters Guessed: <span id="lettersGuessedHost">[]</span></p>
+      <div class="host-row">
+        <!-- Game Title -->
+        <div class="game_title">HANGMAN</div>
+    
+        <!-- Game Status Section -->
+        <div class="host-game-status-box">
+          <h2>Game Status</h2>
+          <p>Secret Word: <span id="secretWordTextHost">******</span></p>
+          <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
+          <p>Letters Guessed: <span id="lettersGuessedHost">[]</span></p>
+        </div>
+      </div>
     </div>
 
     <div id="player-page" style="display: none;">
-      <h2>Enter Guesses</h2>
-      <form id="guess-form" onsubmit="guessSubmission(event)">
-        <label for="guess">Guess:</label>
-        <input type="text" id="guess" name="guess" required><br><br>
-        <input type="submit" value="Submit">
-      </form>
-      <h2>Game Status</h2>
-      <p id="secretWordDisplay">Secret Word: <span id="secretWordText">******</span></p>
-      <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-      <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
-    
+      <!-- Game Title -->
+      <div class="game_title">HANGMAN</div>
 
-      <!-- Hangman Image -->
-      <div class="hangman">
-        <pre>
-        -----
-        |   |
-            |
-            |
-            |
-            |
-      ===========
-        </pre>
+      <div class="game-row">
+
+        <!-- Guessing Section -->
+        <div class="guessing-box">
+          <h2>Enter Guesses</h2>
+          <form id="guess-form" onsubmit="guessSubmission(event)">
+            <label for="guess">Guess:</label>
+            <input type="text" id="guess" name="guess" required>
+            <input type="submit" value="Submit">
+          </form>
+        </div>
+
+        <!-- Hangman Art Section -->
+        <div class="hangman-art-box">
+          <div class="hangman">
+            <pre>
+            -----
+            |   |
+                |
+                |
+                |
+                |
+          ===========</pre>
+          </div>
+        </div>
+    
+        <!-- Game Status Section -->
+        <div class="game-status-box">
+          <h2>Game Status</h2>
+          <p>Secret Word: <span id="secretWordText">******</span></p>
+          <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
+          <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
+        </div>
       </div>
     </div>
-  </div>
-  <div id="incorrectGuessesDisplay">
-    <h3>Incorrect Guesses:</h3>
-    <ul id="incorrectGuessesList">
-      <!-- Incorrect guesses will be displayed here -->
-    </ul>
-  </div>
 
   <script type="text/javascript" charset="utf-8">
     var socket = io();
     var currentRoom = '';
     var playerRole = '';
 
+    // Message to show a player connected to the game
     socket.on('connect', function () {
       console.log('Connected to game');
     });
 
+    // Message to show a player left the game
     socket.on('disconnect ', function() {
       console.log('Disconnected from game');
       socket.removeAllListeners(); // Remove previous listeners
@@ -108,7 +127,7 @@
     }
 
     socket.on('showHostPage', function () {
-      document.querySelector('#role-selectors').style.display = 'none';
+      document.getElementById('role-selectors-page').style.display = 'none';
       document.getElementById('host-page').style.display = 'block';
     });
 
@@ -117,13 +136,15 @@
       playerRole = 'player';
     }
 
+    // Hides role selection and shows player page
     socket.on('showPlayerPage', function () {
-      document.querySelector('#role-selectors').style.display = 'none';
+      document.getElementById('role-selectors-page').style.display = 'none';
       document.getElementById('player-page').style.display = 'flex';
     });
 
+    // Need to setup a waiting page for this
     socket.on('showWaitingPage', function () {
-      document.querySelector('#role-selectors').style.display = 'none';
+      document.getElementById('role-selectors-page').style.display = 'none';
       document.getElementById("submissionMsg").innerHTML = "Role selected! Waiting for host to setup secret word";
     });
 

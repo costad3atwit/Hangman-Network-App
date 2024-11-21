@@ -60,12 +60,25 @@ body.dark-mode {
 }
 
 /* Role Selectors */
-#role-selectors {
+#role-selectors-page {
+    display: flex;
+    flex-direction: column; /* Ensure elements stack vertically */
+    align-items: center;
+    background-color: rgba(236, 200, 175, 0.8);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
     text-align: center;
-    margin-bottom: 20px;
 }
 
-#role-selectors button {
+#role-selectors {
+    display: flex;
+    flex-direction: row; /* Ensure buttons stack vertically */
+    gap: 10px; /* Add spacing between buttons */
+}
+
+#role-selectors-page button {
     margin: 0 10px;
 }
 
@@ -115,13 +128,177 @@ body.dark-mode {
     padding-bottom: 10px
 }
 
-.hangman-art{
-    padding: 25px 25px 30% 25px;
-    display: grid;
-    place-items: center;
+/* Player Page */
+#player-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    position: absolute;
-    bottom: 0px;
-    right: 0px;
-    transform: translate(-50%,-50%);
+    text-align: center;
+    gap: 20px; /* Adds spacing between sections */
+}
+
+/* Form Styling */
+#guess-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 10px; /* Space between form elements */
+}
+
+#guess-form input[type="text"] {
+    padding: 10px;
+    font-size: 1em;
+    width: 90%;
+    border: 1px solid #CE796B;
+    border-radius: 5px;
+}
+
+#guess-form input[type="submit"] {
+    padding: 10px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    background-color: #CE796B;
+    color: #ECC8AF;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#guess-form input[type="submit"]:hover {
+    background-color: #C18C5D;
+}
+
+/* Game Status */
+#player-page h2 {
+    font-size: 1.5em;
+    color: #495867;
+}
+
+#player-page p {
+    font-size: 1em;
+    margin: 5px 0;
+    color: #495867;
+}
+
+/* Parent Container for Row */
+.game-row {
+    display: flex;
+    justify-content: center; /* Centers all items horizontally */
+    align-items: flex-start; /* Aligns items to the top */
+    gap: 20px; /* Adds space between the columns */
+    margin: 20px auto;
+    max-width: 900px;
+}
+
+/* Each Box Style */
+.hangman-art-box, .guessing-box, .game-status-box {
+    background-color: rgba(236, 200, 175, 0.8); /* Light background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 30%; /* Ensures all boxes are equal in width */
+    min-width: 200px; /* Prevents boxes from becoming too narrow */
+}
+
+/* Hangman Art Section */
+.hangman-art-box .hangman {
+    font-size: 1.2em;
+    color: #495867;
+}
+
+/* Incorrect Guesses Section */
+#incorrectGuessesDisplay {
+    margin: 20px auto;
+    padding: 10px;
+    background-color: rgba(236, 200, 175, 0.5); /* Light background */
+    border-radius: 5px;
+    text-align: center;
+    width: 90%;
+    max-width: 600px;
+}
+
+#incorrectGuessesDisplay h3 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+#incorrectGuessesList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    color: #495867;
+}
+
+#incorrectGuessesList li {
+    margin-bottom: 5px;
+    padding: 5px;
+    background-color: #ECC8AF;
+    border-radius: 3px;
+    color: #495867;
+}
+
+/* Game Status Section */
+.game-status-box p {
+    margin: 10px 0;
+    font-size: 1em;
+    color: #495867;
+}
+
+/* Guessing Section */
+.guessing-box form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between form elements */
+}
+
+.guessing-box input[type="text"] {
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #CE796B;
+    border-radius: 5px;
+}
+
+.guessing-box input[type="submit"] {
+    padding: 10px;
+    font-size: 1em;
+    background-color: #CE796B;
+    color: #ECC8AF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.guessing-box input[type="submit"]:hover {
+    background-color: #C18C5D;
+}
+
+/* Parent Container for Host Row */
+.host-row {
+    display: flex;
+    flex-direction: column; /* Default to vertical stack */
+    align-items: center; /* Center content horizontally */
+    gap: 20px; /* Adds spacing between elements */
+    margin: 20px auto;
+    max-width: 900px;
+}
+
+/* Host Game Status Box */
+.host-game-status-box {
+    background-color: rgba(236, 200, 175, 0.8); /* Light background */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 80%; /* Adjust width to fit the content */
+    max-width: 600px; /* Limits maximum size for larger screens */
+}
+
+/* Host Status Text */
+.host-game-status-box p {
+    margin: 10px 0;
+    font-size: 1.1em;
+    color: #495867;
 }
