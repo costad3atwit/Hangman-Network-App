@@ -150,10 +150,15 @@
 
     socket.on('correctGuess', function (data) {
       console.log(`Correct guess: ${data.letter}`);
+      document.getElementById('secretWordText').textContent = data.revealed_word;
+      document.getElementById('lettersGuessed').textContent = data = JSON.stringify(data.lettersGuessed);
     });
 
     socket.on('incorrectGuess', function (data) {
       console.log(`Incorrect guess: ${data.letter}`);
+      document.getElementById('incorrectGuesses').textContent = data.remaining_attempts;
+      document.querySelector('.hangman pre').textContent = data.hangman_stage;
+      document.getElementById('lettersGuessed').textContent = JSON.stringify(data.lettersGuessed);
     });
 
     function toggleDarkMode() {
