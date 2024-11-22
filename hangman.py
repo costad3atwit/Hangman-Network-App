@@ -6,12 +6,14 @@ from flask import request
 from flask_socketio import SocketIO, send, join_room, emit
 from Player1 import Player1
 from Player2 import Player2
+import queue
+
 
 # Bool flag to "remember" when we have both types of players
 player_connections = {}
 host_rooms = {}
-hasHost = False
-hasPlayer = False
+hostQueue = queue.Queue()
+playerQueue = queue.Queue()
 secretWord = ""
 rooms = {}
 
@@ -96,47 +98,18 @@ def hello_world():
     return render_template('index.html',  
                            message=message) 
 
-@socketio.on('connect')
-def handle_connect():
-    global player_connections
-    sid = request.sid
-
-    # if len(player_connections) ==0:
-    #     player_connections[sid] = "Host"
-    #     room_name = f"room_{sid}"  # Create a unique room for the host
-    #     host_rooms[sid] = room_name
-    #     join_room(room_name)
-    #     print("Host joined, room created:", room_name)
-    #     send("Host joined", broadcast=True)
-    # elif len(player_connections) ==1:
-    #     player_connections[sid] = "Player"
-    #     # Find the first host's room
-    #     host_sid = next(iter(player_connections))  # Get the first host's SID
-    #     room_name = host_rooms[host_sid]  # Get the host's room name
-    #     join_room(room_name)
-    #     print("Player joined host's room:", room_name)
-    #     send("Player joined the room", room=room_name)
-    # else:
-    #     print("Connection limit reached.")
-    #     send("Connection limit reached.", room=sid)
-
 @socketio.on('roleSelection')
 def handle_role_selection(data):
-    global player_connections, hasHost, hasPlayer
+    global player_connections, hostQueue, playerQueue
     sid = request.sid  # Current session ID
     role = data['role']  # Role selected by the client
     player = player_connections.get(sid, f"Player_{sid[:6]}")  # Default player name if not set
     print(f'{player} selected role: {role}')
 
     if role == 'host':
-        # Mark host as present
-        hasHost = True
+        hostQueue.put(sid)
         player_connections[sid] = "Host"
 
-        # Create a unique room for the host
-
-
-        #HERE MAYBE??
         room_name = f"room_{sid}"
         rooms[sid] = room_name
 
@@ -148,34 +121,23 @@ def handle_role_selection(data):
         socketio.emit('showHostPage', room=sid)
         send("Host joined", broadcast=True)
 
-        # Connect an existing player (if any) to this new room
-        for player_sid, player_role in player_connections.items():
-            if player_role == "Player" and player_sid not in rooms.values():
-                # Assign the player to the current host's room
-                player_connections[player_sid] = room_name
-                join_room(room_name, sid=player_sid)
-                socketio.emit('showPlayerPage', {'room': room_name}, room=player_sid)
-                print(f"Player joined host's room: {room_name}")
-                break
+        if(not playerQueue.empty()):
+            currentPlayer = playerQueue.get()
+            join_room(room_name, sid=currentPlayer)
+            print(f"Player {currentPlayer} joined the host's room: {room_name}")
+            socketio.emit('showPlayerPage', {'room': room_name}, room=currentPlayer)
 
     elif role == 'player':
-        # Mark player as present
-        hasPlayer = True
+        playerQueue.put(sid)
         player_connections[sid] = "Player"
 
-        if hasHost:
-            # Attempt to connect the player to the oldest available room
-            for host_sid, room_name in rooms.items():
-                if not any(player == room_name for player in player_connections.values()):  # Check for unoccupied room
-                    player_connections[sid] = room_name
-                    join_room(room_name, sid=sid)
-                    socketio.emit('showPlayerPage', {'room': room_name}, room=sid)
-                    print(f"Player joined host's room: {room_name}")
-                    return  
-
-            # If no available room, show waiting page
-            data = {'message': "Waiting for a host to pick the secret word"}
-            socketio.emit('showWaitingPage', data, room=sid)
+        if(not hostQueue.empty()):
+            #ADD PLAYER TO OLDEST HOSTS ROOM
+            currentHost = hostQueue.get()
+            join_room(rooms[currentHost])
+            print(f"player {sid} joined host's room: {rooms[currentHost]}")
+            socketio.emit('showHostPage', room=currentHost)
+            socketio.emit('showPlayerPage', room=sid)
         else:
             # No host available
             data = {'message': "Waiting for a host to join"}
