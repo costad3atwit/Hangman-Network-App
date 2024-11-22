@@ -32,9 +32,10 @@
     
     <div id="host-view" style="display: none;">
       <h2>Game Status</h2>
+      <p> Secret Word Acutal: <span id="secretWordActual"></span></p>
       <p id="secretWordDisplayHost">Secret Word: <span id="secretWordTextHost"></span></p>
-      <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-      <p>Letters Guessed: <span id="lettersGuessedHost">[]</span></p>
+      <p>Remaining Guesses: <span id="remainingGuessesHost">6</span></p>
+      <p>Correct Guesses: <span id="lettersGuessedHost">[]</span></p>
     </div>
     <div id="player-page" style="display: none;" >
       <h2>Enter Guesses </h2>
@@ -45,13 +46,13 @@
       </form>
       <h2>Game Status</h2>
       <p id="secretWordDisplayPlayer">Secret Word: <span id="secretWordTextPlayer"></span></p>
-      <p>Incorrect Guesses: <span id="incorrectGuessesPlayer">0</span></p>
-      <p>Letters Guessed: <p id="lettersGuessedPlayer">[]</p></p>
+      <p>Remaining Guesses: <span id="remainingGuessesPlayer">6</span></p>
+      <p>Correct Guessed: <p id="lettersGuessedPlayer">[]</p></p>
     </div>
     <h2 id="submissionMsg"></h2>
   </div>
 
-  <div id="hangman" class = "hangman-art">
+  <div id="hangman">
     <pre>
   -----
   |   |
@@ -63,13 +64,77 @@
     </pre>
   </div>
   <div id="incorrectGuessesDisplay">
-    <h3>Incorrect Guesses:</h3>
-    <ul id="incorrectGuessesList">
-      <!-- Incorrect guesses will be displayed here -->
-    </ul>
+    <h3>Incorrect Guesses:<span id="incorrectGuesses"></span></h3>
   </div>
 
   <script type="text/javascript" charset="utf-8">
+
+    const hangmanStages = [
+      `
+        -----
+        |   |
+            |
+            |
+            |
+            |
+      ===========
+      `,
+      `
+        -----
+        |   |
+        O   |
+            |
+            |
+            |
+      ===========
+      `,
+      `
+        -----
+        |   |
+        O   |
+        |   |
+            |
+            |
+      ===========
+      `,
+      `
+        -----
+        |   |
+        O   |
+       /|   |
+            |
+            |
+      ===========
+      `,
+      `
+        -----
+        |   |
+        O   |
+       /|\\ |
+            |
+            |
+      ===========
+      `,
+      `
+        -----
+        |   |
+        O   |
+       /|\\ |
+       /    |
+            |
+      ===========
+      `,
+      `
+        -----
+        |   |
+        O   |
+       /|\\ |
+       / \\ |
+            |
+      ===========
+      `
+    ];
+
     let incorrectGuesses = [];  // Incorrect guesses
     let guessedLetters = [];  // All guessed letters
     let socket = io()
@@ -86,6 +151,7 @@
     });
 
     function roleHost() {
+      document.getElementById('role-selectors').style.display = 'none';
       socket.emit('roleSelection', { role: 'host' });
       playerRole = 'host'
     }
@@ -107,6 +173,7 @@
 
 
     function rolePlayer() {
+      document.getElementById('role-selectors').style.display = 'none';
       socket.emit('roleSelection', { role: 'player' });
       playerRole = 'player'
     }
@@ -124,17 +191,29 @@
     socket.on('correctGuess', function(data) {
       console.log(`Correct guess: ${data.letter}`);
       updateSecretWord(data.revealed_word);  // Update the secret word text
-      updateLettersGuessed(data.guessedLetters);  // Update guessed letters display
+      updateLettersGuessed(data.guessedLetters, true);  // Update guessed letters display
     });
 
     // Listen for incorrect guesses
     socket.on('incorrectGuess', function(data) {
       console.log(`Incorrect guess: ${data.letter}`);
-      incorrectGuesses.push(data.letter);  // Add incorrect guess
-      updateIncorrectGuesses();  // Update incorrect guesses display
-      updateHangmanArt(data.hangman_stage);  // Update hangman art
+        updateHangmanArt(data.stage);  // Update hangman art
+        updateLettersGuessed(data.incorrect_letters, false);  // Update incorrect guesses display
+        updateRemainingGuesses(data.remaining_attempts)
     });
 
+    socket.on('gameOver', function(data){
+      console.log("GAME OVER, PLAYER EXCEEDED NUMBER OF ALLOWED INCORRECT GUESSES")
+      updateRemainingGuesses(data.remaining_attempts);
+      document.getElementById("player-page").style.display = 'none';
+      document.getElementById("submissionMsg").style.display = 'block';
+      document.getElementById("submissionMsg").innerHTML = `<pre>${data.message}</pre>`;
+
+    });
+
+    socket.on('repeatedGuess',function(data){
+      document.getElementById("submissionMsg").innerText = "Guess: \'" + data.guess + "\' has already been guessed! Try again";
+    });
     // Update the displayed secret word
     function updateSecretWord(revealedWord) {
       // Set the revealed word to the display
@@ -151,27 +230,52 @@
     }
 
     // Update the list of guessed letters
-    function updateLettersGuessed(guessedLetters) {
+    function updateLettersGuessed(letters,correct) {
       // Update the letters guessed list
-      console.log("Attempting to update lettersGuessed with correctLetters: ", guessedLetters.join(', '));
+      console.log("Attempting to update lettersGuessed with correctLetters: ", letters.join(', '));
       // document.getElementById('lettersGuessedHost').innerText = guessedLetters.join(', ');
-      if(playerRole === 'player'){
-        document.getElementById('lettersGuessedPlayer').textContent = guessedLetters.join(', ');
-      }
-      else if(playerRole === 'host'){
-        document.getElementById('lettersGuessedHost').textContent = guessedLetters.join(', ');
+      if(correct){
+        if(playerRole === 'player'){
+        document.getElementById('lettersGuessedPlayer').textContent = letters.join(', ');
+        }
+        else if(playerRole === 'host'){
+        document.getElementById('lettersGuessedHost').textContent = letters.join(', ');
+        }
+        else{
+        console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
+        }
       }
       else{
+        if(playerRole === 'player'){
+        document.getElementById('incorrectGuesses').innerText = letters.join(', ');
+        }
+        else if(playerRole === 'host'){
+        document.getElementById('incorrectGuesses').innerText = letters.join(', ');
+        }
+        else{
         console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
+        }
+      }
+    }
+
+    function updateRemainingGuesses(numGuesses){
+      if(playerRole == 'player'){
+        document.getElementById("remainingGuessesPlayer").innerText = numGuesses;
+      }
+      else if(playerRole == 'host'){
+        document.getElementById("remainingGuessesHost").innerText = numGuesses;
+      }
+      else{
+        console.log("User has no assigned role.")
       }
     }
 
     // Update the incorrect guesses display
     function updateIncorrectGuesses() {
-      const list = document.getElementById('incorrectGuessesList');
+      let list = document.getElementById('incorrectGuessesList');
       list.innerHTML = '';  // Clear current list
       incorrectGuesses.forEach(letter => {
-        const listItem = document.createElement('li');
+        let listItem = document.createElement('li');
         listItem.textContent = letter;
         list.appendChild(listItem);
       });
@@ -183,19 +287,11 @@
       document.center.classList.toggle('dark-mode');
     }
 
-    function updateHangmanArt(incorrectGuesses) {
-    const hangmanStages = [
-        `  -----\n  |   |\n      |\n      |\n      |\n      |\n===========`,
-        `  -----\n  |   |\n  O   |\n      |\n      |\n      |\n===========`,
-        `  -----\n  |   |\n  O   |\n  |   |\n      |\n      |\n===========`,
-        `  -----\n  |   |\n  O   |\n /|   |\n      |\n      |\n===========`,
-        `  -----\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n===========`,
-        `  -----\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n===========`,
-        `  -----\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n===========`
-    ];
-    document.getElementById('hangman').innerText = hangmanStages[incorrectGuesses];
-}
+    function updateHangmanArt(stage) {
+    document.getElementById('hangman').innerHTML = `<pre>${hangmanStages[stage]}</pre>`;
+    }
 
+    
     function guessSubmission(event) {
         event.preventDefault();
         const guess = document.getElementById("guess").value.trim();
@@ -220,7 +316,8 @@
         document.getElementById("player-page").style.display = 'block'; // Show player view
         // document.getElementById("submissionMsg").style.display = 'none'; // Hide message
     } else if (playerRole === "host") {
-        document.getElementById("secretWordTextHost").textContent = data.secretWord; // Show actual word for host
+        document.getElementById("secretWordActual").textContent = data.secretWord; // Show actual word for host
+        document.getElementById("secretWordTextHost").textContent = data.secretWord.replace(/./g, '*'); // Show actual word for host
         document.getElementById("host-view").style.display = 'block'; // Show host view
     }
 })

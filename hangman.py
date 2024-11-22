@@ -202,16 +202,17 @@ def secretWordSetup(data):
                 rooms[room_name] = {
                     "secret_word": secret.lower(),  # Store secret word in lowercase for consistent validation
                     "guessed_letters": [],
-                    "incorrect_guesses": 0,
+                    "hangman_stage": 0,
+                    "incorrect_letters": [],
                     "game_over": False,  # Initially set game over to False
-                    "revealed_word": ["_"] * len(secret)  # Initialize the revealed word with underscores
+                    "revealed_word": ["*"] * len(secret)  # Initialize the revealed word with asterisks
                 }
                 print(f"Secret Word '{secret}' received and validated for room: '{room_name}' ")
                 
                   # Check if the word is already "guessed" (if all letters are revealed)
                 revealed_word = rooms[room_name]["revealed_word"]
-                if '_' not in revealed_word:  # If there are no underscores, the word is already guessed
-                    rooms[room_name]['game_over'] = True
+                if '*' not in revealed_word:  # If there are no underscores, the word is already guessed
+                    rooms[room_name['game_over']] = True
                     socketio.emit('gameOver', {'message': 'You won! Congratulations!'}, room=room_name)
                     print("The word was already guessed. Game Over!")
              
@@ -244,7 +245,8 @@ def handle_player_guess(data):
         room_data = rooms[room_name]
         secret_word = room_data['secret_word']
         guessed_letters = set(room_data['guessed_letters'])
-        incorrect_guesses = room_data['incorrect_guesses']
+        hangman_stage = room_data['hangman_stage']
+        incorrect_letters = set(room_data['incorrect_letters'])
 
         if guess in guessed_letters:
             # Repeated guess: notify the player
@@ -257,7 +259,7 @@ def handle_player_guess(data):
 
             # Update revealed word
             revealed_word = [
-                letter if letter in guessed_letters else '_' for letter in secret_word
+                letter if letter in guessed_letters else '*' for letter in secret_word
             ]
             room_data['revealed_word'] = revealed_word
 
@@ -266,27 +268,35 @@ def handle_player_guess(data):
             socketio.emit('correctGuess', {'revealed_word': ''.join(revealed_word), 'letter': guess, 'guessedLetters': room_data['guessed_letters']}, room=room_name)
 
             # Check if the word is fully guessed
-            if '_' not in revealed_word:
+            if '*' not in revealed_word:
                 room_data['game_over'] = True
                 socketio.emit('gameOver', {'message': 'Congratulations! You guessed the word!'}, room=room_name)
         else:
             # Incorrect guess
-            incorrect_guesses += 1
-            room_data['incorrect_guesses'] = incorrect_guesses
-
-            # Notify players of incorrect guess and hangman stage
-            socketio.emit('incorrectGuess', {
-                'letter': guess,
-                'remaining_attempts': len(hangman_stages) - incorrect_guesses - 1,
-                'hangman_stage': hangman_stages[incorrect_guesses]
-            }, room=room_name)
-
-            # Check if max incorrect guesses reached
-            if incorrect_guesses == len(hangman_stages) - 1:
+            print("player made an incorrect guess, adding to list")
+            hangman_stage += 1
+            room_data['hangman_stage'] = hangman_stage
+            incorrect_letters.add(guess)
+            room_data['incorrect_letters'] = list(incorrect_letters)
+             # Check if max incorrect guesses reached
+            if len(hangman_stages) - hangman_stage - 1 == 0:
+                i = len(hangman_stages) - hangman_stage -1
+                print(f"len(hangman_stages) - hangman_stage -1 results in {i}")
+                print(f"secret word is {secret_word}")
                 room_data['game_over'] = True
                 socketio.emit('gameOver', {
-                    'message': f"Game over! The word was '{secret_word}'."
+                    'message': "Game Over! You ran out of guesses. The correct word was "+ secret_word
                 }, room=room_name)
+            # Notify players of incorrect guess and hangman stage
+            else:
+                socketio.emit('incorrectGuess', {
+                    'incorrect_letters': room_data['incorrect_letters'],
+                    'letter': guess,
+                    'remaining_attempts': len(hangman_stages) - hangman_stage - 1,
+                    'stage': hangman_stage
+                }, room=room_name)
+                
+           
     else:
         print(f"Room {room_name} does not exist. Ignoring guess.")
 
@@ -295,14 +305,18 @@ def handle_player_guess(data):
 def startGame (secretWord, room_name):
     host_sid = next(iter(player_connections))  # Get the first host's SID
     room_name = rooms[host_sid]  # Get the host's room name
+    room_data = rooms[room_name]
     gameData = {
         'room' : room_name,
         'secretWord': secretWord,
         'incorrectGuesses': 0,  # Initial count
         'lettersGuessed': []    # Initial empty list
     }
-    print('Starting game in room: ' + gameData['room'])
-    socketio.emit('startGame', gameData, room=room_name)
+    if room_data['game_over'] == True:
+        print("THIS GAME HAS ALREADY BEEN FINISHED")
+    else:
+        print('Starting game in room: ' + gameData['room'])
+        socketio.emit('startGame', gameData, room=room_name)
 
   
 
