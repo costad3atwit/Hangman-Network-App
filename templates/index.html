@@ -9,64 +9,75 @@
 </head>
 
 <body>
-  <div>
-    <button type="button" class = "button dark-mode-btn" onclick="toggleDarkMode()">Dark Mode Toggle</button>
-  </div>
+  <!-- Dark Mode Toggle Button -->
+  <button type="button" class="button dark-mode-btn" onclick="toggleDarkMode()">Dark Mode Toggle</button>
 
+  <!-- Main Game Section -->
   <div class="center">
     <div class="game_title">HANGMAN</div>
   
+    <!-- Role Selection Section -->
     <div id="role-selectors">
       <button type="button" class="button" onclick="roleHost()">Play as Host</button>
       <button type="button" class="button" onclick="rolePlayer()">Play as Player</button>
     </div>
 
-    <div id="host-page" style="display: none;" >
-      <h2>Enter the Secret Word </h2>
-      <form id = "host-form" onsubmit="secretWordSubmission(event)">
-        <label for="secret-word">Secret Word:</label>
+    <!-- Host's Secret Word Input -->
+    <div id="host-page" style="display: none;">
+      <h2>Enter the Secret Word</h2>
+      <form id="host-form" onsubmit="secretWordSubmission(event)">
+        <label for="secretWord">Secret Word:</label>
         <input type="text" id="secretWord" name="secretWord" required><br><br>
         <input type="submit" class="button" value="Submit">
       </form>
     </div>
     
+    <!-- Host's Game Status -->
     <div id="host-view" style="display: none;">
       <h2>Game Status</h2>
-      <p> Secret Word Acutal: <span id="secretWordActual"></span></p>
+      <p>Secret Word Actual: <span id="secretWordActual"></span></p>
       <p id="secretWordDisplayHost">Secret Word: <span id="secretWordTextHost"></span></p>
       <p>Remaining Guesses: <span id="remainingGuessesHost">6</span></p>
       <p>Correct Guesses: <span id="lettersGuessedHost">[]</span></p>
     </div>
-    <div id="player-page" style="display: none;" >
-      <h2>Enter Guesses </h2>
-      <form id = "guess-form" onsubmit="guessSubmission(event)">
-        <label for="secret-word">Guess:</label>
+
+    <!-- Player's Guess Input -->
+    <div id="player-page" style="display: none;">
+      <h2>Enter Guesses</h2>
+      <form id="guess-form" onsubmit="guessSubmission(event)">
+        <label for="guess">Guess:</label>
         <input type="text" id="guess" name="guess" required><br><br>
-        <input type="submit" value="Submit">
+        <input type="submit" class="button" value="Submit">
       </form>
       <h2>Game Status</h2>
       <p id="secretWordDisplayPlayer">Secret Word: <span id="secretWordTextPlayer"></span></p>
       <p>Remaining Guesses: <span id="remainingGuessesPlayer">6</span></p>
-      <p>Correct Guessed: <p id="lettersGuessedPlayer">[]</p></p>
+      <p>Correct Guesses: <span id="lettersGuessedPlayer">[]</span></p>
     </div>
+
     <h2 id="submissionMsg"></h2>
   </div>
 
-  <div id="hangman">
-    <pre>
-  -----
-  |   |
-      |
-      |
-      |
-      |
-===========
-    </pre>
-  </div>
-  <div id="incorrectGuessesDisplay">
-    <h3>Incorrect Guesses:<span id="incorrectGuesses"></span></h3>
-  </div>
+  <!-- Hangman Drawing -->
+   
+  <div id="hangman-container"> 
+    <div id="hangman" style="display: none;">
+      <pre>
+        -----
+        |   |
+            |
+            |
+            |
+            |
+      ===========
+      </pre>
+    </div>
 
+    <!-- Incorrect Guesses Display -->
+    <div id="incorrectGuessesDisplay" style="display: none;">
+      <h3>Incorrect Guesses: <span id="incorrectGuesses"></span></h3>
+    </div>
+  </div>
   <script type="text/javascript" charset="utf-8">
 
     const hangmanStages = [
@@ -110,7 +121,7 @@
         -----
         |   |
         O   |
-       /|\\ |
+       /|\\  |
             |
             |
       ===========
@@ -119,7 +130,7 @@
         -----
         |   |
         O   |
-       /|\\ |
+       /|\\  |
        /    |
             |
       ===========
@@ -128,8 +139,8 @@
         -----
         |   |
         O   |
-       /|\\ |
-       / \\ |
+       /|\\  |
+       / \\  |
             |
       ===========
       `
@@ -203,12 +214,14 @@
     });
 
     socket.on('gameOver', function(data){
-      console.log("GAME OVER, PLAYER EXCEEDED NUMBER OF ALLOWED INCORRECT GUESSES")
-      updateRemainingGuesses(data.remaining_attempts);
-      document.getElementById("player-page").style.display = 'none';
+      if(data.win){
+        document.getElementById("player-page").style.display = 'none';
+      }else{
+        document.getElementById("player-page").style.display = 'none';
+        document.getElementById('hangman').innerHTML = `<pre>${hangmanStages[6]}</pre>`;
+      }
       document.getElementById("submissionMsg").style.display = 'block';
       document.getElementById("submissionMsg").innerHTML = `<pre>${data.message}</pre>`;
-
     });
 
     socket.on('repeatedGuess',function(data){
@@ -298,7 +311,7 @@
         console.log("Guess: " + guess);
         if (!/^[a-zA-Z]$/.test(guess)) {
           console.log("Guess non-alphabetic")
-            document.getElementById("submissionMsg").display = 'block';
+            document.getElementById("submissionMsg").style.display = 'block';
             document.getElementById("submissionMsg").innerHTML = "Invalid guess. Please enter a single letter.";
             return;
         }
@@ -311,6 +324,9 @@
     currentRoom = data.room;  // Ensure this is set
     console.log('Game started in room ' + currentRoom);
     console.log('If the above room is non-null check visibility of currentRoom variable to other functions');
+    document.getElementById("incorrectGuessesDisplay").style.display = 'block';
+    document.getElementById("hangman").style.display = 'block';
+
     if (playerRole === "player") {
         document.getElementById("secretWordTextPlayer").textContent = data.secretWord.replace(/./g, '*'); // Mask for players
         document.getElementById("player-page").style.display = 'block'; // Show player view

@@ -3,81 +3,119 @@ Color Pallete
 Background: #ECC8AF
 Text Color: #495867
 Darkmode Button Color: #C18C5D
-Buttom Color: #CE796B
+Button Color: #CE796B
 Other Potential Color: #E7AD99
 */
 
-body{
-    background-color: #ECC8AF;
-    color: #495867;
+body {
+    background-color: #ECC8AF;  
+    color: #495867;  
     transition: background-color 0.5s, color 0.5s;
     font-family: Georgia, serif;
 }
 
-body.dark-mode {
-    background-color: #495867;
-    color: #ECC8AF;
-}
-
-.button {
+.button, input[type=reset], input[type=submit] {
     border: none;
     background-color: #CE796B;
     color: #ECC8AF;
-    padding: 15px 32px;
+    padding: 12px 24px;
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
+    margin: 10px;
     cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
-input[type=reset] {
-    border: none;
-    background-color: #CE796B;
-    color: #ECC8AF;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
+.button:hover, input[type=submit]:hover, input[type=reset]:hover {
+    background-color: #E7AD99; 
 }
 
-.dark-mode-btn{
+.dark-mode-btn {
     background-color: #C18C5D;
     position: fixed;
     top: 10px;
     right: 10px;
 }
 
-.center{
-    padding: 25px 25px 25px 25px;
-    display: grid;
-    place-items: center;
+.center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     position: absolute;
-    top:  50%;
+    top: 50%;
     left: 50%;
-    transform: translate(-50%,-50%);
-}
-
-.game_title{
-    font-size: 2em;
+    transform: translate(-50%, -50%);
+    padding: 30px;
     text-align: center;
-    position: relative;
-    z-index: 2;
-    padding-bottom: 10px
 }
 
-.hangman-art{
-    padding: 25px 25px 30% 25px;
-    display: grid;
-    place-items: center;
-    justify-content: center;
-    position: absolute;
-    bottom: 0px;
-    right: 0px;
-    transform: translate(-50%,-50%);
+.game_title {
+    font-size: 2.25em; 
+    margin-bottom: 20px;
+}
+
+#role-selectors {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#role-selectors .button {
+    width: 200px;
+}
+
+#host-page, #player-page {
+    text-align: center;
+    margin-top: 20px;
+}
+
+#host-view, #player-view {
+    margin-top: 20px;
+}
+
+#hangman {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 3em;
+    text-align: center;
+    white-space: pre-wrap; 
+    
+}
+
+#incorrectGuessesDisplay {
+    text-align: center;
+    font-size: 1.2em;
+}
+
+#hangman, #incorrectGuessesDisplay {
+    width: 100%;
+}
+
+#hangman-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    width: 100%;
+    margin-left: -45%;
+}
+
+#hangman, #incorrectGuessesDisplay {
+    flex: 1; /* Allow both elements to share space equally */
+    margin: 0 10px; /* Add some space between the two elements */
+}
+
+/* Ensuring responsive design */
+@media screen and (max-width: 768px) {
+    #hangman-container {
+        flex-direction: column; /* Stack them vertically on smaller screens */
+    }
+
+    #hangman, #incorrectGuessesDisplay {
+        margin: 10px 0;
+        width: 100%;
+    }
 }

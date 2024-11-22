@@ -213,7 +213,7 @@ def secretWordSetup(data):
                 revealed_word = rooms[room_name]["revealed_word"]
                 if '*' not in revealed_word:  # If there are no underscores, the word is already guessed
                     rooms[room_name['game_over']] = True
-                    socketio.emit('gameOver', {'message': 'You won! Congratulations!'}, room=room_name)
+                    socketio.emit('gameOver', {'message': 'You won! Congratulations!','win': True}, room=room_name)
                     print("The word was already guessed. Game Over!")
              
                 # Notify players in the room to start the game
@@ -270,7 +270,7 @@ def handle_player_guess(data):
             # Check if the word is fully guessed
             if '*' not in revealed_word:
                 room_data['game_over'] = True
-                socketio.emit('gameOver', {'message': 'Congratulations! You guessed the word!'}, room=room_name)
+                socketio.emit('gameOver', {'message': 'Congratulations! You guessed the word!' + secret_word, 'win':True}, room=room_name)
         else:
             # Incorrect guess
             print("player made an incorrect guess, adding to list")
@@ -285,7 +285,7 @@ def handle_player_guess(data):
                 print(f"secret word is {secret_word}")
                 room_data['game_over'] = True
                 socketio.emit('gameOver', {
-                    'message': "Game Over! You ran out of guesses. The correct word was "+ secret_word
+                    'message': "Game Over! You ran out of guesses. The correct word was "+ secret_word, 'win': False
                 }, room=room_name)
             # Notify players of incorrect guess and hangman stage
             else:
