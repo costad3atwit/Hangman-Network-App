@@ -9,15 +9,17 @@
 </head>
 
 <body>
-  <!-- Dark Mode Toggle Button -->
-  <button type="button" class="button dark-mode-btn" onclick="toggleDarkMode()">Dark Mode Toggle</button>
+  <div>
+    <button type="button" class="button dark-mode-btn" onclick="toggleDarkMode()">Dark Mode Toggle</button>
+  </div>
 
-  <!-- Main Game Section -->
   <div class="center">
+
+    <!-- Role Selectors -->
     <div id="role-selectors-page">
+      <!-- Game Title -->
       <div class="game_title">HANGMAN</div>
-    
-      <!-- Role Selection Section -->
+
       <div id="role-selectors">
         <button type="button" class="button" onclick="roleHost()">Play as Host</button>
         <button type="button" class="button" onclick="rolePlayer()">Play as Player</button>
@@ -31,75 +33,69 @@
 
       <h2>Enter the Secret Word</h2>
       <form id="host-form" onsubmit="secretWordSubmission(event)">
-        <label for="secretWord">Secret Word:</label>
-        <input type="text" id="secretWord" name="secretWord" required><br><br>
+        <label for="secret-word">Secret Word:</label>
+        <input type="text" id="secretWord" name="secretWord" required>
         <input type="submit" class="button" value="Submit">
       </form>
     </div>
-    
-    <!-- Host's Game Status -->
+
     <div id="host-view" style="display: none;">
       <div class="host-row">
         <!-- Game Title -->
-          <div class="game_title">HANGMAN</div>
+        <div class="game_title">HANGMAN</div>
     
-          <!-- Game Status Section -->
-          <div class="host-game-status-box">
-           <h2>Game Status</h2>
-              <p>Secret Word Actual: <span id="secretWordActual"></span></p>
-              <p>Secret Word: <span id="secretWordTextHost"></span></p>
-              <p>Remaining Guesses: <span id="remainingGuessesHost">6</span></p>
-              <p>Correct Guesses: <span id="lettersGuessedHost">[]</span></p>
-          </div>
+        <!-- Game Status Section -->
+        <div class="host-game-status-box">
+          <h2>Game Status</h2>
+          <p>Secret Word: <span id="secretWordTextHost">******</span></p>
+          <p>Remaining Guesses: <span id="remainingGuessesHost">0</span></p>
+          <p>Incorrect Guesses: <span id="incorrectGuessesHost">[]</span></p>
+          <p>Letters Guessed: <span id="lettersGuessedHost">[]</span></p>
+        </div>
       </div>
     </div>
 
-    <!-- Player's Guess Input -->
     <div id="player-page" style="display: none;">
       <!-- Game Title -->
       <div class="game_title">HANGMAN</div>
+
       <div class="game-row">
-            <!-- Guessing Section -->
-            <div class="guessing-box">
-              <h2>Enter Guesses</h2>
-              <form id="guess-form" onsubmit="guessSubmission(event)">
-                <label for="guess">Guess:</label>
-                <input type="text" id="guess" name="guess" required><br><br>
-                <input type="submit" class="button" value="Submit">
-              </form>
-            </div>
-            <h2>Game Status</h2>
-            <p id="secretWordDisplayPlayer">Secret Word: <span id="secretWordTextPlayer"></span></p>
-            <p>Remaining Guesses: <span id="remainingGuessesPlayer">6</span></p>
-            <p>Correct Guesses: <span id="lettersGuessedPlayer">[]</span></p>
+
+        <!-- Guessing Section -->
+        <div class="guessing-box">
+          <h2>Enter Guesses</h2>
+          <form id="guess-form" onsubmit="guessSubmission(event)">
+            <label for="guess">Guess:</label>
+            <input type="text" id="guess" name="guess" required>
+            <input type="submit" value="Submit">
+          </form>
+        </div>
+
+        <!-- Hangman Art Section -->
+        <div class="hangman-art-box">
+          <div class="hangman">
+            <pre>
+            -----
+            |   |
+                |
+                |
+                |
+                |
+          ===========</pre>
           </div>
-
-        <h2 id="submissionMsg"></h2>
         </div>
-
-      <!-- Hangman Art Section -->
-      <div class="hangman-art-box" display = 'none;'>
-        <div class="hangman">
-          <pre>
-          -----
-          |   |
-              |
-              |
-              |
-              |
-        ===========</pre>
+    
+        <!-- Game Status Section -->
+        <div class="game-status-box">
+          <h2>Game Status</h2>
+          <p>Secret Word: <span id="secretWordTextPlayer">******</span></p>
+          <p>Remainig Guesses: <span id="remainingGuessesPlayer">0</span></p>
+          <p>Incorrect Guesses: <span id="incorrectGuessesPLayer">[]</span></p>
+          <p>Letters Guessed: <span id="lettersGuessedPlayer">[]</span></p>
         </div>
       </div>
+    </div>
 
-      <!-- Game Status Section -->
-      <div class="game-status-box">
-        <h2>Game Status</h2>
-        <p>Secret Word: <span id="secretWordText">******</span></p>
-        <p>Incorrect Guesses: <span id="incorrectGuesses">0</span></p>
-        <p>Letters Guessed: <span id="lettersGuessed">[]</span></p>
-        <p>Incorrect Guesses: <span id = "incorrectGuesses">[]</span></p>
-      </div>
-   </div>
   <script type="text/javascript" charset="utf-8">
 
     const hangmanStages = [
@@ -143,7 +139,7 @@
         -----
         |   |
         O   |
-       /|\\  |
+       /|\  |
             |
             |
       ===========
@@ -152,7 +148,7 @@
         -----
         |   |
         O   |
-       /|\\  |
+       /|\  |
        /    |
             |
       ===========
@@ -161,8 +157,8 @@
         -----
         |   |
         O   |
-       /|\\  |
-       / \\  |
+       /|\  |
+       / \  |
             |
       ===========
       `
@@ -186,7 +182,6 @@
     });
 
     function roleHost() {
-      document.getElementById('role-selectors').style.display = 'none';
       socket.emit('roleSelection', { role: 'host' });
       playerRole = 'host'
     }
@@ -198,9 +193,12 @@
       socket.emit("hostSecretWord", { word: secretWord });
       console.log("Host submitted the secret word:", secretWord);
 
+      document.getElementById("secretWordTextHost").innerText = secretWord;
       document.getElementById("host-page").style.display = 'none';
+      document.getElementById("host-view").style.display = 'block';
       document.getElementById("submissionMsg").innerHTML = "Secret Word Submitted! Waiting for player";
     }
+
     socket.on('showHostPage', function () {
       document.getElementById('role-selectors-page').style.display = 'none';
       document.getElementById('host-page').style.display = 'block';
@@ -208,7 +206,7 @@
 
 
     function rolePlayer() {
-      document.getElementById('role-selectors').style.display = 'none';
+      document.getElementById('role-selectors-page').style.display = 'none';
       socket.emit('roleSelection', { role: 'player' });
       playerRole = 'player'
     }
@@ -254,6 +252,7 @@
     socket.on('repeatedGuess',function(data){
       document.getElementById("submissionMsg").innerText = "Guess: \'" + data.guess + "\' has already been guessed! Try again";
     });
+
     // Update the displayed secret word
     function updateSecretWord(revealedWord) {
       // Set the revealed word to the display
@@ -287,13 +286,13 @@
       }
       else{
         if(playerRole === 'player'){
-        document.getElementById('incorrectGuesses').innerText = letters.join(', ');
+          document.getElementById('incorrectGuessesPlayer').textContent = letters.join(', ');
         }
         else if(playerRole === 'host'){
-        document.getElementById('incorrectGuesses').innerText = letters.join(', ');
+          document.getElementById('incorrectGuessesHost').textContent = letters.join(', ');
         }
         else{
-        console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
+          console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
         }
       }
     }
@@ -338,9 +337,9 @@
         console.log("Guess: " + guess);
         if (!/^[a-zA-Z]$/.test(guess)) {
           console.log("Guess non-alphabetic")
-            document.getElementById("submissionMsg").style.display = 'block';
-            document.getElementById("submissionMsg").innerHTML = "Invalid guess. Please enter a single letter.";
-            return;
+          document.getElementById("submissionMsg").style.display = 'block';
+          document.getElementById("submissionMsg").innerHTML = "Invalid guess. Please enter a single letter.";
+          return;
         }
         console.log("Player submitted guess:", guess, " in room", currentRoom);
         document.getElementById("guess").value = ''; // Clear input field
@@ -351,7 +350,6 @@
     currentRoom = data.room;  // Ensure this is set
     console.log('Game started in room ' + currentRoom);
     console.log('If the above room is non-null check visibility of currentRoom variable to other functions');
-    document.getElementById("incorrectGuessesDisplay").style.display = 'block';
     document.getElementById("hangman").style.display = 'block';
 
     if (playerRole === "player") {
