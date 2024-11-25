@@ -18,7 +18,9 @@
     <!-- Role Selectors -->
     <div id="role-selectors-page">
       <!-- Game Title -->
-      <div class="game_title">HANGMAN</div>
+      <div class="game_title">HANGMAN
+        <p id="submissionMsg"></p>
+      </div>
 
       <div id="role-selectors">
         <button type="button" class="button" onclick="roleHost()">Play as Host</button>
@@ -47,8 +49,9 @@
         <!-- Game Status Section -->
         <div class="host-game-status-box">
           <h2>Game Status</h2>
+          <p>Secret Word Actual: <span id = "secretWordActual"></span></p>
           <p>Secret Word: <span id="secretWordTextHost">******</span></p>
-          <p>Remaining Guesses: <span id="remainingGuessesHost">0</span></p>
+          <p>Remaining Guesses: <span id="remainingGuessesHost">6</span></p>
           <p>Incorrect Guesses: <span id="incorrectGuessesHost">[]</span></p>
           <p>Letters Guessed: <span id="lettersGuessedHost">[]</span></p>
         </div>
@@ -73,7 +76,7 @@
 
         <!-- Hangman Art Section -->
         <div class="hangman-art-box">
-          <div class="hangman">
+          <div class="hangman" id="hangman">
             <pre>
             -----
             |   |
@@ -89,8 +92,8 @@
         <div class="game-status-box">
           <h2>Game Status</h2>
           <p>Secret Word: <span id="secretWordTextPlayer">******</span></p>
-          <p>Remainig Guesses: <span id="remainingGuessesPlayer">0</span></p>
-          <p>Incorrect Guesses: <span id="incorrectGuessesPLayer">[]</span></p>
+          <p>Remaining Guesses: <span id="remainingGuessesPlayer">6</span></p>
+          <p>Incorrect Guesses: <span id="incorrectGuessesPlayer">[]</span></p>
           <p>Letters Guessed: <span id="lettersGuessedPlayer">[]</span></p>
         </div>
       </div>
@@ -139,7 +142,7 @@
         -----
         |   |
         O   |
-       /|\  |
+       /|\\  |
             |
             |
       ===========
@@ -148,7 +151,7 @@
         -----
         |   |
         O   |
-       /|\  |
+       /|\\  |
        /    |
             |
       ===========
@@ -157,8 +160,8 @@
         -----
         |   |
         O   |
-       /|\  |
-       / \  |
+       /|\\  |
+       / \\  |
             |
       ===========
       `
@@ -350,12 +353,11 @@
     currentRoom = data.room;  // Ensure this is set
     console.log('Game started in room ' + currentRoom);
     console.log('If the above room is non-null check visibility of currentRoom variable to other functions');
-    document.getElementById("hangman").style.display = 'block';
+    // document.getElementById("hangman").style.display = 'block';
 
     if (playerRole === "player") {
         document.getElementById("secretWordTextPlayer").textContent = data.secretWord.replace(/./g, '*'); // Mask for players
         document.getElementById("player-page").style.display = 'block'; // Show player view
-        // document.getElementById("submissionMsg").style.display = 'none'; // Hide message
     } else if (playerRole === "host") {
         document.getElementById("secretWordActual").textContent = data.secretWord; // Show actual word for host
         document.getElementById("secretWordTextHost").textContent = data.secretWord.replace(/./g, '*'); // Show actual word for host
