@@ -122,11 +122,12 @@ def handle_role_selection(data):
         if(not playerQueue.empty()):
             print('playerQueue recognized as non-empty')
             socketio.emit('showHostPage', room=sid)
-            currentPlayer = playerQueue.get()
+            currentPlayer = playerQueue.queue[0]
+            print(f'currentPlayer = playerQueue.queue[0] returns: {currentPlayer}')
             hostQueue.get() # Remove host from queue, player has filled their room
             join_room(room_name, sid=currentPlayer)
             print(f"Player {currentPlayer} joined the host's room: {room_name}")
-            socketio.emit('showPlayerPage', {'room': room_name}, room=currentPlayer)
+            socketio.emit('showWaitingPage', {'message': "Waiting for host to enter a secret word"}, room=currentPlayer) #THIS REPLACES THE LINE BELOW
 
     elif role == 'player':
         playerQueue.put(sid)
@@ -136,7 +137,7 @@ def handle_role_selection(data):
             print('hostQueue recognized as non-empty')
             #ADD PLAYER TO OLDEST HOSTS ROOM
             currentHost = hostQueue.get()
-            playerQueue.get() # Remove player from queue, they've found a host
+            playerQueue.queue[0] #May need to replace to get()
             join_room(rooms[currentHost])
             print(f"player {sid} joined host's room: {rooms[currentHost]}")
             socketio.emit('showHostPage', room=currentHost)
@@ -269,11 +270,16 @@ def handle_player_guess(data):
 
 def startGame (secretWord, room_name):
     
+    print(f"starting game in room {room_name}")
     # Ensure room_name exists
     if room_name not in rooms:
         print(f"Error: Room {room_name} does not exist.")
         return
 
+    print("pre currentPlayer establish")
+    currentPlayer = playerQueue.get()
+    print(f"attempting to show player page with {currentPlayer}")
+    socketio.emit('showPlayerPage', {'room': room_name}, room=currentPlayer)
    
     room_data = rooms[room_name]
     gameData = {
