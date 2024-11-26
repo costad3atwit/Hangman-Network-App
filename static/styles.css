@@ -335,6 +335,8 @@ body.dark-mode {
     animation-delay: 0.6s;
 }
 
+
+
 /* Keyframes for the dot animation */
 @keyframes blink {
     0%, 100% {
@@ -343,4 +345,22 @@ body.dark-mode {
     50% {
         opacity: 1;
     }
+}
+
+#game-over-page {
+    display: none;
+    flex-direction: column; /* Ensure elements stack vertically */
+    align-items: center;
+    background-color: rgba(236, 200, 175, 0.8);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+}
+
+#new-game-selectors {
+    display: flex;
+    flex-direction: row; /* Ensure buttons stack vertically */
+    gap: 10px; /* Add spacing between buttons */
 }

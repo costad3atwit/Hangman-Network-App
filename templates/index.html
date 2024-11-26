@@ -65,6 +65,14 @@
           <span>.</span>
       </div>
     </div>
+    <div id = "game-over-page" class = "game-over-page">
+      <h2> GAME OVER </h2>
+      <p id = "game-over-message"></p>
+      <div id="new-game-selectors" class = "new-game-selectors">
+        <button type="button" class="button" onclick="playAgain()">Play Again</button>
+        <button type="button" class="button" onclick="exit()">Exit</button>
+      </div>
+    </div>
 
     <div id="player-page" style="display: none;">
       <!-- Game Title -->
@@ -264,15 +272,21 @@
     });
 
     socket.on('gameOver', function(data){
-      if(data.win){
-        document.getElementById("player-page").style.display = 'none';
-      }else{
-        document.getElementById("player-page").style.display = 'none';
-        document.getElementById('hangman').innerHTML = `<pre>${hangmanStages[6]}</pre>`;
-      }
-      document.getElementById("submissionMsg").style.display = 'block';
-      document.getElementById("submissionMsg").innerHTML = `<pre>${data.message}</pre>`;
+      document.getElementById("player-page").style.display = 'none'; 
+      document.getElementById("host-view").style.display = 'none';
+      document.getElementById("game-over-page").style.display = 'flex';
+      document.getElementById("game-over-message").innerText = data.message;
     });
+
+    function playAgain(){
+      document.getElementById("game-over-page").style.display = 'none';
+      document.getElementById("role-selectors-page").style.display = 'flex';
+      socket.emit('leave-room',{'room': currentRoom})
+    }
+
+    function exit(){
+      close();
+    }
 
     socket.on('repeatedGuess',function(data){
       document.getElementById("submissionMsg").innerText = "Guess: \'" + data.guess + "\' has already been guessed! Try again";

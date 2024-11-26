@@ -236,7 +236,16 @@ def handle_player_guess(data):
             # Check if the word is fully guessed
             if '*' not in revealed_word:
                 room_data['game_over'] = True
-                socketio.emit('gameOver', {'message': 'Congratulations! You guessed the word!' + secret_word, 'win':True}, room=room_name)
+                socketio.emit('gameOver', {'message': 'Congratulations! You guessed the word! - ' + secret_word, 'win':True}, room=room_name)
+                rooms[room_name] = {
+                    "secret_word": "",  # Store secret word in lowercase for consistent validation
+                    "guessed_letters": [],
+                    "hangman_stage": 0,
+                    "incorrect_letters": [],
+                    "game_over": False,  # Initially set game over to False
+                    "revealed_word": ["*"]  # Initialize the revealed word with asterisks
+                }
+
         else:
             # Incorrect guess
             print("player made an incorrect guess, adding to list")
@@ -253,6 +262,15 @@ def handle_player_guess(data):
                 socketio.emit('gameOver', {
                     'message': "Game Over! You ran out of guesses. The correct word was "+ secret_word, 'win': False
                 }, room=room_name)
+                rooms[room_name] = {
+                    "secret_word": "",  # Store secret word in lowercase for consistent validation
+                    "guessed_letters": [],
+                    "hangman_stage": 0,
+                    "incorrect_letters": [],
+                    "game_over": False,  # Initially set game over to False
+                    "revealed_word": ["*"]  # Initialize the revealed word with asterisks
+                }
+
             # Notify players of incorrect guess and hangman stage
             else:
                 socketio.emit('incorrectGuess', {
@@ -266,6 +284,10 @@ def handle_player_guess(data):
     else:
         print(f"Room {room_name} does not exist. Ignoring guess.")
 
+@socketio.on('leave_room')
+def on_leave(data):
+    print(f'attempting to have user leave room {data['room']}')
+    leave_room(data['room'])
 
 
 def startGame (secretWord, room_name):
