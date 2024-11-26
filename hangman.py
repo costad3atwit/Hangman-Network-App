@@ -8,13 +8,11 @@ from Player1 import Player1
 from Player2 import Player2
 import queue
 
-
 # Bool flag to "remember" when we have both types of players
 player_connections = {}
 host_rooms = {}
 hostQueue = queue.Queue()
 playerQueue = queue.Queue()
-secretWord = ""
 rooms = {}
 
 # Hangman ASCII art
@@ -118,11 +116,14 @@ def handle_role_selection(data):
         print("Host joined, room created:", room_name)
 
         # Notify the host
-        socketio.emit('showHostPage', room=sid)
+        socketio.emit('showWaitingPage', {'message': 'Waiting for player to join'}, room = sid)
         send("Host joined", broadcast=True)
 
         if(not playerQueue.empty()):
+            print('playerQueue recognized as non-empty')
+            socketio.emit('showHostPage', room=sid)
             currentPlayer = playerQueue.get()
+            hostQueue.get() # Remove host from queue, player has filled their room
             join_room(room_name, sid=currentPlayer)
             print(f"Player {currentPlayer} joined the host's room: {room_name}")
             socketio.emit('showPlayerPage', {'room': room_name}, room=currentPlayer)
@@ -132,16 +133,17 @@ def handle_role_selection(data):
         player_connections[sid] = "Player"
 
         if(not hostQueue.empty()):
+            print('hostQueue recognized as non-empty')
             #ADD PLAYER TO OLDEST HOSTS ROOM
             currentHost = hostQueue.get()
+            playerQueue.get() # Remove player from queue, they've found a host
             join_room(rooms[currentHost])
             print(f"player {sid} joined host's room: {rooms[currentHost]}")
             socketio.emit('showHostPage', room=currentHost)
-            socketio.emit('showPlayerPage', room=sid)
+            socketio.emit('showWaitingPage', {'message': 'Waiting for host to select a secret'}, room=sid)
         else:
             # No host available
-            data = {'message': "Waiting for a host to join"}
-            socketio.emit('showWaitingPage', data, room=sid)
+            socketio.emit('showWaitingPage', {'message': "Waiting for a host to join"}, room=sid)
 
     else:
         print(f"Unknown role selected: {role}")
@@ -157,8 +159,9 @@ def secretWordSetup(data):
         
         if secret.isalpha():
             sid = request.sid
+            print(f'sid: {sid} (this should match the room name below)')
             room_name = rooms.get(sid)  # Retrieve the host's room name
-            
+            print(f'room_name: {room_name} ')
             # Create and store room data if room_name is valid
             if room_name:
                 rooms[room_name] = {
@@ -265,8 +268,13 @@ def handle_player_guess(data):
 
 
 def startGame (secretWord, room_name):
-    host_sid = next(iter(player_connections))  # Get the first host's SID
-    room_name = rooms[host_sid]  # Get the host's room name
+    
+    # Ensure room_name exists
+    if room_name not in rooms:
+        print(f"Error: Room {room_name} does not exist.")
+        return
+
+   
     room_data = rooms[room_name]
     gameData = {
         'room' : room_name,
