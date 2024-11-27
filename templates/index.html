@@ -209,6 +209,7 @@
       event.preventDefault();
       const secretWord = document.getElementById("secretWord").value;
 
+      
       socket.emit("hostSecretWord", { word: secretWord });
       console.log("Host submitted the secret word:", secretWord);
 
@@ -279,10 +280,22 @@
     });
 
     function playAgain(){
+      document.getElementById("submissionMsg").innerText = "";
+      document.getElementById("hangman").innerHTML = 
+      `<pre>
+            -----
+            |   |
+                |
+                |
+                |
+                |
+          ===========</pre>`
+          ;
       document.getElementById("game-over-page").style.display = 'none';
       document.getElementById("role-selectors-page").style.display = 'flex';
       socket.emit('leave-room',{'room': currentRoom})
     }
+
 
     function exit(){
       close();
@@ -388,13 +401,20 @@
     currentRoom = data.room;  // Ensure this is set
     console.log('Game started in room ' + currentRoom);
     console.log('If the above room is non-null check visibility of currentRoom variable to other functions');
-
+    document.getElementById("submissionMsg").innerText = "";
     if (playerRole === "player") {
         document.getElementById("secretWordTextPlayer").textContent = data.secretWord.replace(/./g, '*'); // Mask for players
+        document.getElementById("remainingGuessesPlayer").innerText = "6";
+        document.getElementById("incorrectGuessesPlayer").innerText = "";
+        document.getElementById("lettersGuessedPlayer").innerText = "";
     } else if (playerRole === "host") {
         document.getElementById("secretWordActual").textContent = data.secretWord; // Show actual word for host
         document.getElementById("secretWordTextHost").textContent = data.secretWord.replace(/./g, '*'); // Show actual word for host
+        document.getElementById("remainingGuessesHost").innerText = "6";
+        document.getElementById("incorrectGuessesHost").innerText = "";
+        document.getElementById("lettersGuessedHost").innerText = "";
         document.getElementById("host-view").style.display = 'block'; // Show host view
+
     }
 })
   </script>
