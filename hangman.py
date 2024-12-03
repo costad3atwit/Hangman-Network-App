@@ -1,5 +1,9 @@
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO, send, join_room, emit
+from flask import Flask
+from flask import render_template
+from flask import request 
+#pip install flask-socketio
+#to install line 6 copy the above command into the terminal
+from flask_socketio import SocketIO, leave_room, send, join_room, emit
 from Player1 import Player1
 from Player2 import Player2
 import queue
@@ -11,7 +15,7 @@ hostQueue = queue.Queue()
 playerQueue = queue.Queue()
 rooms = {}
 
-# Hangman ASCII Art
+# Hangman ASCII art
 hangman_stages = [
     r"""
    -----
@@ -78,43 +82,31 @@ hangman_stages = [
     """
 ]
 
-# Flask and Socket.IO Setup
+# Create a Flask app instance
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "secret!"
-socketio = SocketIO(app)  # No need for async_mode argument here
 
-# Routes
+socketio = SocketIO(app)
+# Define a route for the root URL ('/')
+
 @app.route('/')
-def home():
-    """Render the home page."""
-    return render_template('index.html', message="Hangman App! :P")
+def hello_world():
+    message = "Hangman App! :P"
+    
+    return render_template('index.html',  
+                           message=message) 
 
-# Socket.IO Events
 @socketio.on('roleSelection')
 def handle_role_selection(data):
-    """Handle role selection: host or player."""
     global player_connections, hostQueue, playerQueue
-
-    sid = request.sid
-    role = data.get('role')
-    player = player_connections.get(sid, f"Player_{sid[:6]}")
-    print(f"{player} selected role: {role}")
+    sid = request.sid  # Current session ID
+    role = data['role']  # Role selected by the client
+    player = player_connections.get(sid, f"Player_{sid[:6]}")  # Default player name if not set
+    print(f'{player} selected role: {role}')
 
     if role == 'host':
-        handle_host_role(sid)
-    elif role == 'player':
-        handle_player_role(sid)
-    else:
-        print(f"Unknown role selected: {role}")
-
-    # Debugging state
-    print(f"Current player connections: {player_connections}")
-    print(f"Current host rooms: {rooms}")
-
-def handle_host_role(sid):
-    """Handle host role selection."""
-    hostQueue.put(sid)
-    player_connections[sid] = "Host"
+        hostQueue.put(sid)
+        player_connections[sid] = "Host"
 
         room_name = f"room_{sid}"
         rooms[sid] = room_name
@@ -137,10 +129,9 @@ def handle_host_role(sid):
             print(f"Player {currentPlayer} joined the host's room: {room_name}")
             socketio.emit('showWaitingPage', {'message': "Waiting for host to enter a secret word"}, room=currentPlayer) #THIS REPLACES THE LINE BELOW
 
-def handle_player_role(sid):
-    """Handle player role selection."""
-    playerQueue.put(sid)
-    player_connections[sid] = "Player"
+    elif role == 'player':
+        playerQueue.put(sid)
+        player_connections[sid] = "Player"
 
         if(not hostQueue.empty()):
             print('hostQueue recognized as non-empty')
@@ -156,13 +147,17 @@ def handle_player_role(sid):
             socketio.emit('showWaitingPage', {'message': "Waiting for a host to join"}, room=sid)
 
     else:
-        socketio.emit('showWaitingPage', {'message': "Waiting for a host to join"}, room=sid)
+        print(f"Unknown role selected: {role}")
+
+    # Debugging state
+    print(f"Current player connections: {player_connections}")
+    print(f"Current host rooms: {rooms}")        
 
 @socketio.on('hostSecretWord')
-def secret_word_setup(data):
-    """Handle secret word setup by the host."""
+def secretWordSetup(data):
     if 'word' in data and isinstance(data['word'], str):
         secret = data['word']
+        
         if secret.isalpha():
             sid = request.sid
             print(f'sid: {sid} (this should match the room name below)')
@@ -192,76 +187,51 @@ def secret_word_setup(data):
             else:
                 print("Error: Room not found for host.")
         else:
-            print("Invalid secret word format. Only alphabetic characters are allowed.")
+            print("Invalid secret word format, only alphabetic characters allowed.")
+
     else:
         print(f"Unexpected data format received: {data}")
 
-def setup_game(secret):
-    """Initialize the game with the secret word."""
-    sid = request.sid
-    room_name = rooms.get(sid)
-
-    if not room_name:
-        print("Error: Room not found for host.")
-        return
-
-    rooms[room_name] = {
-        "secret_word": secret.lower(),
-        "guessed_letters": [],
-        "hangman_stage": 0,
-        "incorrect_letters": [],
-        "game_over": False,
-        "revealed_word": ["*"] * len(secret),
-    }
-    print(f"Secret Word '{secret}' received and validated for room: '{room_name}'")
-    start_game(secret, room_name)
-
 @socketio.on('playerGuess')
 def handle_player_guess(data):
-    """Handle player's guess."""
-    room_name = data.get('room')
-    guess = data.get('guess', '').lower().strip()
 
+    room_name = data.get('room')
+    print(f"Room name = data.get('room') assigns: {room_name}")
+    guess = data.get('guess', '').lower().strip()  # Sanitize input
+    
     if not guess.isalpha() or len(guess) != 1:
+        # Invalid guess: send error message
         socketio.emit('invalidGuess', {'message': 'Please guess one alphabetic letter at a time.'}, room=room_name)
         return
 
-    if room_name and room_name in rooms:
-        process_guess(room_name, guess)
-    else:
-        print(f"Room {room_name} does not exist. Ignoring guess.")
 
-def process_guess(room_name, guess):
-    """Process the player's guess."""
-    room_data = rooms[room_name]
-    secret_word = room_data['secret_word']
-    guessed_letters = set(room_data['guessed_letters'])
-    hangman_stage = room_data['hangman_stage']
-    incorrect_letters = set(room_data['incorrect_letters'])
+    # HERE PLEASEEEE
+    if room_name:
+        print(f"room_name valid: {room_name}, checking guess against secret word")
+        room_data = rooms[room_name]
+        secret_word = room_data['secret_word']
+        guessed_letters = set(room_data['guessed_letters'])
+        hangman_stage = room_data['hangman_stage']
+        incorrect_letters = set(room_data['incorrect_letters'])
 
-    if guess in guessed_letters or guess in incorrect_letters:
-        socketio.emit('repeatedGuess', {'message': f"You've already guessed '{guess}'."}, room=room_name)
-    elif guess in secret_word:
-        handle_correct_guess(room_name, room_data, guess)
-    else:
-        handle_incorrect_guess(room_name, room_data, guess)
+        if guess in guessed_letters:
+            # Repeated guess: notify the player
+            socketio.emit('repeatedGuess', {'message': f"You've already guessed '{guess}'."}, room=room_name)
+        elif guess in secret_word:
+            # Correct guess
+            print("player made a correct guess, adding to list")
+            guessed_letters.add(guess)
+            room_data['guessed_letters'] = list(guessed_letters)
 
-def handle_correct_guess(room_name, room_data, guess):
-    """Handle a correct guess."""
-    guessed_letters = set(room_data['guessed_letters'])
-    guessed_letters.add(guess)
-    room_data['guessed_letters'] = list(guessed_letters)
+            # Update revealed word
+            revealed_word = [
+                letter if letter in guessed_letters else '*' for letter in secret_word
+            ]
+            room_data['revealed_word'] = revealed_word
 
-    revealed_word = [
-        letter if letter in guessed_letters else '*' for letter in room_data['secret_word']
-    ]
-    room_data['revealed_word'] = revealed_word
-
-    socketio.emit('correctGuess', {
-        'revealed_word': ''.join(revealed_word),
-        'letter': guess,
-        'guessedLetters': room_data['guessed_letters']
-    }, room=room_name)
+            # Broadcast the updated revealed word
+            print(f"emitting correctGuess to client with following info: \n Revealed Word: {revealed_word} \n Letter Guessed: {guess} \n Guessed Letters: {', '.join(room_data['guessed_letters'])}")
+            socketio.emit('correctGuess', {'revealed_word': ''.join(revealed_word), 'letter': guess, 'guessedLetters': room_data['guessed_letters']}, room=room_name)
 
             # Check if the word is fully guessed
             if '*' not in revealed_word:
@@ -358,4 +328,4 @@ def check_win_condition(room_name, secret_word, guessed_letters):
 
 # Run the app when this file is executed
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0',port=5000)

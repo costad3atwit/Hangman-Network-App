@@ -158,7 +158,7 @@
         -----
         |   |
         O   |
-       /|\\  |
+       /|\  |
             |
             |
       ===========
@@ -167,7 +167,7 @@
         -----
         |   |
         O   |
-       /|\\  |
+       /|\  |
        /    |
             |
       ===========
@@ -176,8 +176,8 @@
         -----
         |   |
         O   |
-       /|\\  |
-       / \\  |
+       /|\  |
+       / \  |
             |
       ===========
       `
@@ -315,28 +315,46 @@
       else if(playerRole === 'host'){
         document.getElementById('secretWordTextHost').innerText = revealedWord;
       }
-    
-      function updateLettersGuessed(letters, correct) {
-        const elementId = correct
-          ? playerRole === 'player' ? 'lettersGuessedPlayer' : 'lettersGuessedHost'
-          : playerRole === 'player' ? 'incorrectGuessesPlayer' : 'incorrectGuessesHost';
-    
-        document.getElementById(elementId).textContent = letters.join(', ');
+      else{
+        console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
       }
-    
-      function updateRemainingGuesses(numGuesses) {
-        const elementId = playerRole === 'player' ? 'remainingGuessesPlayer' : 'remainingGuessesHost';
-        document.getElementById(elementId).innerText = numGuesses;
+    }
+
+    // Update the list of guessed letters
+    function updateLettersGuessed(letters,correct) {
+      // Update the letters guessed list
+      console.log("Attempting to update lettersGuessed with correctLetters: ", letters.join(', '));
+      // document.getElementById('lettersGuessedHost').innerText = guessedLetters.join(', ');
+      if(correct){
+        if(playerRole === 'player'){
+        document.getElementById('lettersGuessedPlayer').textContent = letters.join(', ');
+        }
+        else if(playerRole === 'host'){
+        document.getElementById('lettersGuessedHost').textContent = letters.join(', ');
+        }
+        else{
+        console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
+        }
       }
-    
-      function updateHangmanArt(stage) {
-        document.getElementById('hangman').innerHTML = `<pre>${hangmanStages[stage]}</pre>`;
+      else{
+        if(playerRole === 'player'){
+          document.getElementById('incorrectGuessesPlayer').textContent = letters.join(', ');
+        }
+        else if(playerRole === 'host'){
+          document.getElementById('incorrectGuessesHost').textContent = letters.join(', ');
+        }
+        else{
+          console.log("Player role is unassigned, will not be able to choose which page to update with guessed letters");
+        }
       }
-    
-      function updateMessage(message) {
-        const msgElement = document.getElementById("submissionMsg");
-        msgElement.style.display = 'block';
-        msgElement.innerHTML = message;
+    }
+
+    function updateRemainingGuesses(numGuesses){
+      if(playerRole == 'player'){
+        document.getElementById("remainingGuessesPlayer").innerText = numGuesses;
+      }
+      else if(playerRole == 'host'){
+        document.getElementById("remainingGuessesHost").innerText = numGuesses;
       }
       else{
         console.log("User has no assigned role.")
@@ -367,12 +385,14 @@
     function guessSubmission(event) {
         event.preventDefault();
         const guess = document.getElementById("guess").value.trim();
-        
+        console.log("Guess: " + guess);
         if (!/^[a-zA-Z]$/.test(guess)) {
-          updateMessage("Invalid guess. Please enter a single letter.");
+          console.log("Guess non-alphabetic")
+          document.getElementById("submissionMsg").style.display = 'block';
+          document.getElementById("submissionMsg").innerHTML = "Invalid guess. Please enter a single letter.";
           return;
         }
-    
+        console.log("Player submitted guess:", guess, " in room", currentRoom);
         document.getElementById("guess").value = ''; // Clear input field
         socket.emit("playerGuess", { guess: guess, room: currentRoom });
     }
